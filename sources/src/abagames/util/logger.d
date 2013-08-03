@@ -5,8 +5,9 @@
  */
 module abagames.util.logger;
 
-private import std.cstream;
 private import std.string;
+private import std.stdio;
+private import std.conv;
 
 /**
  * Logger(error/info).
@@ -18,26 +19,26 @@ private import std.c.windows.windows;
 
 public class Logger {
 
-  public static void info(char[] msg, bool nline = true) {
+  public static void info(const char[] msg, bool nline = true) {
     // Win32 exe crashes if it writes something to stderr.
     /*if (nline)
-      std.cstream.derr.writeLine(msg);
+      stderr.writeln(msg);
     else
-      std.cstream.derr.writeString(msg);*/
+      stderr.write(msg);*/
   }
 
   public static void info(double n, bool nline = true) {
     /*if (nline)
-      std.cstream.derr.writeLine(std.string.toString(n));
+      stderr.writeln(std.string.toString(n));
     else
-      std.cstream.derr.writeString(std.string.toString(n) ~ " ");*/
+      stderr.write(std.string.toString(n) ~ " ");*/
   }
 
-  private static void putMessage(char[] msg) {
+  private static void putMessage(const char[] msg) {
     MessageBoxA(null, std.string.toStringz(msg), "Error", MB_OK | MB_ICONEXCLAMATION);
   }
 
-  public static void error(char[] msg) {
+  public static void error(const char[] msg) {
     putMessage("Error: " ~ msg);
   }
 
@@ -54,32 +55,32 @@ public class Logger {
 
 public class Logger {
 
-  public static void info(char[] msg, bool nline = true) {
+  public static void info(const char[] msg, bool nline = true) {
     if (nline)
-      std.cstream.derr.writeLine(msg);
+      stderr.writeln(msg);
     else
-      std.cstream.derr.writeString(msg);
+      stderr.write(msg);
   }
 
   public static void info(double n, bool nline = true) {
     if (nline)
-      std.cstream.derr.writeLine(std.string.toString(n));
+      stderr.writeln(to!string(n));
     else
-      std.cstream.derr.writeString(std.string.toString(n) ~ " ");
+      stderr.write(to!string(n) ~ " ");
   }
 
-  public static void error(char[] msg) {
-    std.cstream.derr.writeLine("Error: " ~ msg);
+  public static void error(const char[] msg) {
+    stderr.writeln("Error: " ~ msg);
   }
 
   public static void error(Exception e) {
-    std.cstream.derr.writeLine("Error: " ~ e.toString());
+    stderr.writeln("Error: " ~ e.toString());
   }
 
   public static void error(Error e) {
-    std.cstream.derr.writeLine("Error: " ~ e.toString());
+    stderr.writeln("Error: " ~ e.toString());
     if (e.next)
-      error(e.next);
+      error(cast(Error)e.next);
   }
 }
 

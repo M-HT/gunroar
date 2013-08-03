@@ -26,7 +26,7 @@ public class Crystal: Actor {
   Vector vel;
   int cnt;
 
-  invariant {
+  invariant() {
     assert(pos.x < 15 && pos.x > -15);
     assert(pos.y < 30 && pos.y > -30);
     assert(vel.x < 10 && vel.x > -10);

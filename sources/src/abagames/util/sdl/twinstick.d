@@ -6,7 +6,7 @@
 module abagames.util.sdl.twinstick;
 
 private import std.string;
-private import std.stream;
+private import std.stdio;
 private import std.math;
 private import SDL;
 private import abagames.util.vector;
@@ -60,7 +60,7 @@ public class TwinStick: Input {
         state.right.x = state.right.y = 0;
       } else {
         ry = -ry;
-        float rd = atan2(rx, ry) * reverse + rotate;
+        float rd = atan2(cast(float) rx, cast(float) ry) * reverse + rotate;
         assert(rd <>= 0);
         float rl = sqrt(cast(float) rx * rx + cast(float) ry * ry);
         assert(rl <>= 0);
@@ -116,7 +116,7 @@ public class TwinStickState {
   Vector left, right;
  private:
 
-  invariant {
+  invariant() {
     assert(left.x >= -1 && left.x <= 1);
     assert(left.y >= -1 && left.y <= 1);
     assert(right.x >= -1 && right.x <= 1);
@@ -153,17 +153,17 @@ public class TwinStickState {
   }
 
   public void read(File fd) {
-    fd.read(left.x);
-    fd.read(left.y);
-    fd.read(right.x);
-    fd.read(right.y);
+    float read_data[4];
+    fd.rawRead(read_data);
+    left.x = read_data[0];
+    left.y = read_data[1];
+    right.x = read_data[2];
+    right.y = read_data[3];
   }
 
   public void write(File fd) {
-    fd.write(left.x);
-    fd.write(left.y);
-    fd.write(right.x);
-    fd.write(right.y);
+    float write_data[4] = [left.x, left.y, right.x, right.y];
+    fd.rawWrite(write_data);
   }
 
   public bool equals(TwinStickState s) {
@@ -176,7 +176,11 @@ public class RecordableTwinStick: TwinStick {
   mixin RecordableInput!(TwinStickState);
  private:
 
-  public TwinStickState getState(bool doRecord = true) {
+  public override TwinStickState getState() {
+    return getState(true);
+  }
+
+  public TwinStickState getState(bool doRecord) {
     TwinStickState s = super.getState();
     if (doRecord)
       record(s);

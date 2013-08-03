@@ -26,7 +26,7 @@ public class Spark: LuminousActor {
   float r, g, b;
   int cnt;
 
-  invariant {
+  invariant() {
     assert(pos.x < 40 && pos.x > -40);
     assert(pos.y < 60 && pos.y > -60);
     assert(ppos.x < 40 && ppos.x > -40);
@@ -39,7 +39,7 @@ public class Spark: LuminousActor {
     assert(cnt >= 0);
   }
 
-  public static this() {
+  public static void init0() {
     rand = new Rand;
   }
 
@@ -138,7 +138,7 @@ public class Smoke: LuminousActor {
   float size;
   float r, g, b, a;
 
-  invariant {
+  invariant() {
     assert(windVel.x < 1 && windVel.x > -1);
     assert(windVel.y < 1 && windVel.y > -1);
     assert(wakePos.x < 15 && wakePos.x > -15);
@@ -159,7 +159,7 @@ public class Smoke: LuminousActor {
     assert(a >= 0 && a <= 1);
   }
 
-  public static this() {
+  public static void init0() {
     rand = new Rand;
     wakePos = new Vector;
     windVel = new Vector3(0.04f, 0.04f, 0.02f);
@@ -248,6 +248,8 @@ public class Smoke: LuminousActor {
       b = rand.nextFloat(0.2f) + 0.7f;
       a = 1;
       break;
+    default:
+      break;
     }
     exists = true;
   }
@@ -297,6 +299,8 @@ public class Smoke: LuminousActor {
     case SmokeType.LANCE_SPARK:
       a *= 0.95f;
       size *= 0.97f;
+      break;
+    default:
       break;
     }
     if (size > 5)
@@ -370,7 +374,7 @@ public class Fragment: Actor {
   float size;
   float d2, md2;
 
-  invariant {
+  invariant() {
     assert(pos.x < 15 && pos.x > -15);
     assert(pos.y < 20 && pos.y > -20);
     assert(pos.z < 20 && pos.z > -10);
@@ -494,7 +498,7 @@ public class SparkFragment: LuminousActor {
   int cnt;
   bool hasSmoke;
 
-  invariant {
+  invariant() {
     assert(pos.x < 15 && pos.x > -15);
     assert(pos.y < 20 && pos.y > -20);
     assert(pos.z < 20 && pos.z > -10);
@@ -632,7 +636,7 @@ public class Wake: Actor {
   int cnt;
   bool revShape;
 
-  invariant {
+  invariant() {
     assert(pos.x < 15 && pos.x > -15);
     assert(pos.y < 20 && pos.y > -20);
     assert(vel.x < 10 && vel.x > -10);

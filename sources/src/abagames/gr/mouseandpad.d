@@ -6,7 +6,7 @@
 module abagames.gr.mouseandpad;
 
 private import std.string;
-private import std.stream;
+private import std.stdio;
 private import SDL;
 private import abagames.util.sdl.input;
 private import abagames.util.sdl.recordableinput;

@@ -93,7 +93,7 @@ public class MainLoop {
       frame = cast(int) (nowTick - prvTickCount) / itv;
       if (frame <= 0) {
         frame = 1;
-        SDL_Delay(prvTickCount + itv - nowTick);
+        SDL_Delay(cast(uint)(prvTickCount + itv - nowTick));
         if (accframe) {
           prvTickCount = SDL_GetTicks();
         } else {
@@ -121,7 +121,7 @@ public class MainLoop {
   }
 
   // Intentional slowdown.
-  
+
   public void initInterval() {
     interval = INTERVAL_BASE;
   }

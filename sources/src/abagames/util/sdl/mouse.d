@@ -6,7 +6,7 @@
 module abagames.util.sdl.mouse;
 
 private import std.string;
-private import std.stream;
+private import std.stdio;
 private import SDL;
 private import abagames.util.sdl.input;
 private import abagames.util.sdl.recordableinput;
@@ -109,15 +109,20 @@ public class MouseState {
   }
 
   public void read(File fd) {
-    fd.read(x);
-    fd.read(y);
-    fd.read(button);
+    float read_data[2];
+    fd.rawRead(read_data);
+    x = read_data[0];
+    y = read_data[1];
+    int read_data2[1];
+    fd.rawRead(read_data2);
+    button = read_data2[0];
   }
 
   public void write(File fd) {
-    fd.write(x);
-    fd.write(y);
-    fd.write(button);
+    float write_data[2] = [x, y];
+    fd.rawWrite(write_data);
+    int write_data2[1] = [button];
+    fd.rawWrite(write_data2);
   }
 
   public bool equals(MouseState s) {
@@ -132,7 +137,11 @@ public class RecordableMouse: Mouse {
   mixin RecordableInput!(MouseState);
  private:
 
-  public MouseState getState(bool doRecord = true) {
+  public override MouseState getState() {
+    return getState(true);
+  }
+
+  public MouseState getState(bool doRecord) {
     MouseState s = super.getState();
     if (doRecord)
       record(s);

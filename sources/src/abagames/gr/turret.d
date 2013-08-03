@@ -49,7 +49,7 @@ public class Turret {
   int burstCnt;
   Enemy parent;
 
-  invariant {
+  invariant() {
     assert(pos.x < 15 && pos.x > -15);
     assert(pos.y < 60 && pos.y > -40);
     assert(deg <>= 0);
@@ -296,6 +296,8 @@ public class Turret {
       parent.increaseMultiplier(1);
       parent.addScore(20);
       break;
+    default:
+      break;
     }
   }
 
@@ -334,7 +336,7 @@ public class TurretSpec {
  private:
   float _size;
 
-  invariant {
+  invariant() {
     assert(type >= 0);
     assert(interval > 0);
     assert(speed > 0);
@@ -544,6 +546,8 @@ public class TurretSpec {
       assert(speed <>= 0);
       speed *= 0.2f;
       break;
+    default:
+      break;
     }
     if (speed < 0.1f)
       speed = 0.1f;
@@ -599,7 +603,7 @@ public class TurretGroup {
   Turret[MAX_NUM] turret;
   int cnt;
 
-  invariant {
+  invariant() {
     assert(centerPos.x < 15 && centerPos.x > -15);
     assert(centerPos.y < 60 && centerPos.y > -40);
   }
@@ -609,7 +613,7 @@ public class TurretGroup {
               Enemy parent) {
     this.ship = ship;
     centerPos = new Vector;
-    foreach (inout Turret t; turret)
+    foreach (ref Turret t; turret)
       t = new Turret(field, bullets, ship, sparks, smokes, fragments, parent);
   }
 
@@ -639,6 +643,8 @@ public class TurretGroup {
       y = 0;
       my = spec.offset.y / (spec.num + 1);
       break;
+    default:
+      break;
     }
     for (int i = 0; i < spec.num; i++) {
       float tbx, tby;
@@ -653,6 +659,8 @@ public class TurretGroup {
         tby = y;
         d = atan2(tbx, tby);
         assert(d <>= 0);
+        break;
+      default:
         break;
       }
       tbx *= (1 - spec.distRatio);
@@ -698,7 +706,7 @@ public class TurretGroupSpec {
   float distRatio;
   Vector offset;
 
-  invariant {
+  invariant() {
     assert(num >= 1 && num < 20);
     assert(alignDeg <>= 0);
     assert(alignWidth <>= 0);
@@ -747,7 +755,7 @@ public class MovingTurretGroup {
   Vector centerPos;
   Turret[MAX_NUM] turret;
 
-  invariant {
+  invariant() {
     assert(radius > -10);
     assert(radiusAmpCnt <>= 0);
     assert(deg <>= 0);
@@ -767,7 +775,7 @@ public class MovingTurretGroup {
               Enemy parent) {
     this.ship = ship;
     centerPos = new Vector;
-    foreach (inout Turret t; turret)
+    foreach (ref Turret t; turret)
       t = new Turret(field, bullets, ship, sparks, smokes, fragments, parent);
     radius = radiusAmpCnt = 0;
     deg = 0;
@@ -898,7 +906,7 @@ public class MovingTurretGroupSpec {
   float distRatio;
   float xReverse;
 
-  invariant {
+  invariant() {
     assert(num >= 1);
     assert(alignDeg <>= 0);
     assert(alignAmp <>= 0);
@@ -913,7 +921,7 @@ public class MovingTurretGroupSpec {
     assert(swingAmpVel <>= 0);
     assert(distRatio <>= 0);
     assert(xReverse == 1 || xReverse == -1);
-    
+
   }
 
   public this() {

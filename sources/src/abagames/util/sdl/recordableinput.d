@@ -5,7 +5,7 @@
  */
 module abagames.util.sdl.recordableinput;
 
-private import std.stream;
+private import std.stdio;
 private import abagames.util.iterator;
 
 /**
@@ -39,8 +39,8 @@ public template RecordableInput(T) {
 }
 
 public class NoRecordDataException: Exception {
-  public this(char[] msg) {
-    super(msg);
+  public this(const char[] msg) {
+    super(msg.idup);
   }
 }
 
@@ -98,9 +98,11 @@ public class InputRecord(T) {
   }
 
   public void save(File fd) {
-    fd.write(record.length);
+    int write_data[1] = [cast(int)(record.length)];
+    fd.rawWrite(write_data);
     foreach (Record r; record) {
-      fd.write(r.series);
+      write_data[0] = r.series;
+      fd.rawWrite(write_data);
       r.data.write(fd);
     }
   }
@@ -109,9 +111,12 @@ public class InputRecord(T) {
     clear();
     int l, s;
     T d;
-    fd.read(l);
+    int read_data[1];
+    fd.rawRead(read_data);
+    l = read_data[0];
     for (int i = 0; i < l; i++) {
-      fd.read(s);
+      fd.rawRead(read_data);
+      s = read_data[0];
       d = T.newInstance();
       d.read(fd);
       Record r;

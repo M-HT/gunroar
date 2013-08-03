@@ -18,7 +18,7 @@ private import abagames.util.sdl.luminous;
  */
 public class Screen: Screen3D {
  private:
-  const char[] CAPTION = "Gunroar";
+  const string CAPTION = "Gunroar";
   static Rand rand;
   static float lineWidthBase;
   LuminousScreen luminousScreen;
@@ -26,13 +26,13 @@ public class Screen: Screen3D {
   int screenShakeCnt;
   float screenShakeIntense;
 
-  invariant {
+  invariant() {
     assert(_luminosity >= 0 && _luminosity <= 1);
     assert(screenShakeCnt >= 0 && screenShakeCnt < 120);
     assert(screenShakeIntense >= 0 && screenShakeIntense < 1);
   }
 
-  public static this() {
+  public static void init0() {
     rand = new Rand;
   }
 

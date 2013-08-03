@@ -7,6 +7,7 @@ module abagames.util.vector;
 
 private import std.math;
 private import std.string;
+private import std.conv;
 
 /**
  * Vector.
@@ -37,7 +38,7 @@ public class Vector {
       rsl.x = mag * v.x / ll;
       rsl.y = mag * v.y / ll;
     } else {
-      rsl.x = rsl.y = 0; 
+      rsl.x = rsl.y = 0;
     }
     return rsl;
   }
@@ -52,12 +53,12 @@ public class Vector {
     y -= v.y;
   }
 
-  public void opMulAssign(float a) {	
+  public void opMulAssign(float a) {
     x *= a;
     y *= a;
   }
 
-  public void opDivAssign(float a) {	
+  public void opDivAssign(float a) {
     x /= a;
     y /= a;
   }
@@ -205,8 +206,8 @@ public class Vector {
       return false;
   }
 
-  public char[] toString() {
-    return "(" ~ std.string.toString(x) ~ ", " ~ std.string.toString(y) ~ ")";
+  public override string toString() {
+    return "(" ~ to!string(x) ~ ", " ~ to!string(y) ~ ")";
   }
 }
 
@@ -260,13 +261,13 @@ public class Vector3 {
     z -= v.z;
   }
 
-  public void opMulAssign(float a) {	
+  public void opMulAssign(float a) {
     x *= a;
     y *= a;
     z *= a;
   }
 
-  public void opDivAssign(float a) {	
+  public void opDivAssign(float a) {
     x /= a;
     y /= a;
     z /= a;

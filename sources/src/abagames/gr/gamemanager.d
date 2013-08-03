@@ -71,6 +71,14 @@ public class GameManager: abagames.util.sdl.gamemanager.GameManager {
   bool escPressed;
 
   public override void init() {
+    BaseShape.init0();
+    Screen.init0();
+    EnemyState.init0();
+    EnemySpec.init0();
+    Spark.init0();
+    Smoke.init0();
+    NumReel.init0();
+    NumIndicator.init0();
     Letter.init();
     Shot.init();
     BulletShape.init();
@@ -202,13 +210,13 @@ public class GameManager: abagames.util.sdl.gamemanager.GameManager {
   private void saveLastReplay() {
     try {
       inGameState.saveReplay("last.rpl");
-    } catch (Object o) {}
+    } catch (Exception o) {}
   }
 
   private void loadLastReplay() {
     try {
       inGameState.loadReplay("last.rpl");
-    } catch (Object o) {
+    } catch (Exception o) {
       inGameState.resetReplay();
     }
   }
@@ -216,7 +224,7 @@ public class GameManager: abagames.util.sdl.gamemanager.GameManager {
   private void loadErrorReplay() {
     try {
       inGameState.loadReplay("error.rpl");
-    } catch (Object o) {
+    } catch (Exception o) {
       inGameState.resetReplay();
     }
   }
@@ -369,7 +377,7 @@ public class InGameState: GameState {
     NORMAL, TWIN_STICK, DOUBLE_PLAY, MOUSE,
   };
   static int GAME_MODE_NUM = 4;
-  static char[][] gameModeText = ["NORMAL", "TWIN STICK", "DOUBLE PLAY", "MOUSE"];
+  static string[] gameModeText = ["NORMAL", "TWIN STICK", "DOUBLE PLAY", "MOUSE"];
   bool isGameOver;
  private:
   static const float SCORE_REEL_SIZE_DEFAULT = 0.5f;
@@ -385,7 +393,7 @@ public class InGameState: GameState {
   float scoreReelSize;
   int _gameMode;
 
-  invariant {
+  invariant() {
     assert(left >= -1 && left < 10);
     assert(gameOverCnt >= 0);
     assert(pauseCnt >= 0);
@@ -431,6 +439,8 @@ public class InGameState: GameState {
     case GameMode.MOUSE:
       mouseAndPad.startRecord();
       _replayData.mouseAndPadInputRecord = mouseAndPad.inputRecord;
+      break;
+    default:
       break;
     }
     _replayData.seed = rand.nextInt32();
@@ -561,7 +571,7 @@ public class InGameState: GameState {
     bullets.draw();
   }
 
-  public void drawFront() {
+  public override void drawFront() {
     ship.drawFront();
     scoreReel.draw(11.5f + (SCORE_REEL_SIZE_DEFAULT - scoreReelSize) * 3,
                    -8.2f - (SCORE_REEL_SIZE_DEFAULT - scoreReelSize) * 3,
@@ -582,7 +592,7 @@ public class InGameState: GameState {
     stageManager.draw();
   }
 
-  public void drawOrtho() {
+  public override void drawOrtho() {
     drawGameParams();
     if (isGameOver)
       Letter.drawString("GAME OVER", 190, 180, 15);
@@ -626,11 +636,11 @@ public class InGameState: GameState {
     scoreReelSize += (SCORE_REEL_SIZE_SMALL - scoreReelSize) * 0.08f;
   }
 
-  public void saveReplay(char[] fileName) {
+  public void saveReplay(string fileName) {
     _replayData.save(fileName);
   }
 
-  public void loadReplay(char[] fileName) {
+  public void loadReplay(string fileName) {
     _replayData = new ReplayData;
     _replayData.load(fileName);
   }
@@ -654,7 +664,7 @@ public class TitleState: GameState {
   InGameState inGameState;
   int gameOverCnt;
 
-  invariant {
+  invariant() {
     assert(gameOverCnt >= 0);
   }
 
@@ -705,6 +715,8 @@ public class TitleState: GameState {
     case InGameState.GameMode.MOUSE:
       mouseAndPad.startReplay(_replayData.mouseAndPadInputRecord);
       break;
+    default:
+      break;
     }
     titleManager.replayData = _replayData;
     inGameState.gameMode = _replayData.gameMode;
@@ -731,7 +743,7 @@ public class TitleState: GameState {
     }
   }
 
-  public void drawFront() {
+  public override void drawFront() {
     if (_replayData)
       inGameState.drawFront();
   }

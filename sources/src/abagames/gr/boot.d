@@ -6,7 +6,8 @@
 module abagames.gr.boot;
 
 private import std.string;
-private import std.stream;
+//private import std.stream;
+private import std.conv;
 private import std.math;
 private import std.c.stdlib;
 private import abagames.util.logger;
@@ -58,10 +59,10 @@ version (Win32_release) {
       _moduleCtor();
       char exe[4096];
       GetModuleFileNameA(null, exe, 4096);
-      char[][1] prog;
-      prog[0] = std.string.toString(exe);
-      result = boot(prog ~ std.string.split(std.string.toString(lpCmdLine)));
-    } catch (Object o) {
+      string[1] prog;
+      prog[0] = to!string(exe);
+      result = boot(prog ~ std.string.split(to!string(lpCmdLine)));
+    } catch (Exception o) {
       Logger.error("Exception: " ~ o.toString());
       result = EXIT_FAILURE;
     }
@@ -70,12 +71,12 @@ version (Win32_release) {
   }
 } else {
   // Boot as the general executable.
-  public int main(char[][] args) {
+  public int main(string[] args) {
     return boot(args);
   }
 }
 
-public int boot(char[][] args) {
+public int boot(string[] args) {
   screen = new Screen;
   input = new MultipleInputDevice;
   pad = new RecordablePad;
@@ -94,21 +95,21 @@ public int boot(char[][] args) {
   }
   try {
     mainLoop.loop();
-  } catch (Object o) {
+  } catch (Exception o) {
     Logger.info(o.toString());
     try {
       gameManager.saveErrorReplay();
-    } catch (Object o1) {}
+    } catch (Exception o1) {}
     throw o;
   }
   return EXIT_SUCCESS;
 }
 
-private void parseArgs(char[][] commandArgs) {
-  char[][] args = readOptionsIniFile();
+private void parseArgs(string[] commandArgs) {
+  string[] args = readOptionsIniFile();
   for (int i = 1; i < commandArgs.length; i++)
     args ~= commandArgs[i];
-  char[] progName = commandArgs[0];
+  string progName = commandArgs[0];
   for (int i = 0; i < args.length; i++) {
     switch (args[i]) {
     case "-brightness":
@@ -117,7 +118,7 @@ private void parseArgs(char[][] commandArgs) {
         throw new Exception("Invalid options");
       }
       i++;
-      float b = cast(float) std.string.atoi(args[i]) / 100;
+      float b = cast(float) to!int(args[i]) / 100;
       if (b < 0 || b > 1) {
         usage(args[0]);
         throw new Exception("Invalid options");
@@ -131,7 +132,7 @@ private void parseArgs(char[][] commandArgs) {
         throw new Exception("Invalid options");
       }
       i++;
-      float l = cast(float) std.string.atoi(args[i]) / 100;
+      float l = cast(float) to!int(args[i]) / 100;
       if (l < 0 || l > 1) {
         usage(progName);
         throw new Exception("Invalid options");
@@ -147,9 +148,9 @@ private void parseArgs(char[][] commandArgs) {
         throw new Exception("Invalid options");
       }
       i++;
-      int w = std.string.atoi(args[i]);
+      int w = to!int(args[i]);
       i++;
-      int h = std.string.atoi(args[i]);
+      int h = to!int(args[i]);
       screen.width = w;
       screen.height = h;
       break;
@@ -171,7 +172,7 @@ private void parseArgs(char[][] commandArgs) {
         throw new Exception("Invalid options");
       }
       i++;
-      float s = cast(float) std.string.atoi(args[i]) / 100;
+      float s = cast(float) to!int(args[i]) / 100;
       if (s < 0 || s > 5) {
         usage(progName);
         throw new Exception("Invalid options");
@@ -188,7 +189,7 @@ private void parseArgs(char[][] commandArgs) {
         throw new Exception("Invalid options");
       }
       i++;
-      twinStick.rotate = cast(float) std.string.atoi(args[i]) * PI / 180.0f;
+      twinStick.rotate = cast(float) to!int(args[i]) * PI / 180.0f;
       break;
     case "-reversestick2":
     case "-reverserightstick":
@@ -203,7 +204,7 @@ private void parseArgs(char[][] commandArgs) {
         throw new Exception("Invalid options");
       }
       i++;
-      float s = cast(float) std.string.atoi(args[i]) / 100;
+      float s = cast(float) to!int(args[i]) / 100;
       if (s < 0 || s > 5) {
         usage(progName);
         throw new Exception("Invalid options");
@@ -217,17 +218,17 @@ private void parseArgs(char[][] commandArgs) {
   }
 }
 
-private final const char[] OPTIONS_INI_FILE = "options.ini";
+private string OPTIONS_INI_FILE = "options.ini";
 
-private char[][] readOptionsIniFile() {
+private string[] readOptionsIniFile() {
   try {
     return Tokenizer.readFile(OPTIONS_INI_FILE, " ");
-  } catch (Object e) {
+  } catch (Exception e) {
     return null;
   }
 }
 
-private void usage(char[] progName) {
+private void usage(string progName) {
   Logger.error
     ("Usage: " ~ progName ~ " [-window] [-res x y] [-brightness [0-100]] [-luminosity [0-100]] [-nosound] [-exchange] [-turnspeed [0-500]] [-firerear] [-rotatestick2 deg] [-reversestick2] [-enableaxis5] [-nowait]");
 }

@@ -5,7 +5,7 @@
  */
 module abagames.gr.replay;
 
-private import std.stream;
+private import std.stdio;
 private import abagames.util.sdl.recordableinput;
 private import abagames.util.sdl.pad;
 private import abagames.util.sdl.twinstick;
@@ -18,7 +18,7 @@ private import abagames.gr.mouseandpad;
  */
 public class ReplayData {
  public:
-  static const char[] dir = "replay";
+  static string dir = "replay";
   static const int VERSION_NUM = 11;
   InputRecord!(PadState) padInputRecord;
   InputRecord!(TwinStickState) twinStickInputRecord;
@@ -30,18 +30,24 @@ public class ReplayData {
   int gameMode;
  private:
 
-  public void save(char[] fileName) {
-    auto File fd = new File;
-    fd.create(dir ~ "/" ~ fileName);
-    fd.write(VERSION_NUM);
-    fd.write(seed);
-    fd.write(score);
-    fd.write(shipTurnSpeed);
-    if (shipReverseFire)
-      fd.write(1);
-    else
-      fd.write(0);
-    fd.write(gameMode);
+  public void save(string fileName) {
+    scope File fd;
+    int write_data_int[1];
+    long write_data_long[1];
+    float write_data_float[1];
+    fd.open(dir ~ "/" ~ fileName, "wb");
+    write_data_int[0] = VERSION_NUM;
+    fd.rawWrite(write_data_int);
+    write_data_long[0] = seed;
+    fd.rawWrite(write_data_long);
+    write_data_int[0] = score;
+    fd.rawWrite(write_data_int);
+    write_data_float[0] = shipTurnSpeed;
+    fd.rawWrite(write_data_float);
+    write_data_int[0] = (shipReverseFire)?1:0;
+    fd.rawWrite(write_data_int);
+    write_data_int[0] = gameMode;
+    fd.rawWrite(write_data_int);
     switch (gameMode) {
     case InGameState.GameMode.NORMAL:
       padInputRecord.save(fd);
@@ -53,27 +59,34 @@ public class ReplayData {
     case InGameState.GameMode.MOUSE:
       mouseAndPadInputRecord.save(fd);
       break;
+    default:
+      break;
     }
     fd.close();
   }
 
-  public void load(char[] fileName) {
-    auto File fd = new File;
+  public void load(string fileName) {
+    scope File fd;
+    int read_data_int[1];
+    long read_data_long[1];
+    float read_data_float[1];
     fd.open(dir ~ "/" ~ fileName);
-    int ver;
-    fd.read(ver);
-    if (ver != VERSION_NUM)
-      throw new Error("Wrong version num");
-    fd.read(seed);
-    fd.read(score);
-    fd.read(shipTurnSpeed);
-    int srf;
-    fd.read(srf);
-    if (srf == 1)
+    fd.rawRead(read_data_int);
+    if (read_data_int[0] != VERSION_NUM)
+      throw new Exception("Wrong version num");
+    fd.rawRead(read_data_long);
+    seed = read_data_long[0];
+    fd.rawRead(read_data_int);
+    score = read_data_int[0];
+    fd.rawRead(read_data_float);
+    shipTurnSpeed = read_data_float[0];
+    fd.rawRead(read_data_int);
+    if (read_data_int[0] == 1)
       shipReverseFire = true;
     else
       shipReverseFire = false;
-    fd.read(gameMode);
+    fd.rawRead(read_data_int);
+    gameMode = read_data_int[0];
     switch (gameMode) {
     case InGameState.GameMode.NORMAL:
       padInputRecord = new InputRecord!(PadState);
@@ -87,6 +100,8 @@ public class ReplayData {
     case InGameState.GameMode.MOUSE:
       mouseAndPadInputRecord = new InputRecord!(MouseAndPadState);
       mouseAndPadInputRecord.load(fd);
+      break;
+    default:
       break;
     }
     fd.close();

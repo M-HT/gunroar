@@ -27,12 +27,12 @@ public class ScoreReel {
   int digit;
   NumReel[MAX_DIGIT] numReel;
 
-  invariant {
+  invariant() {
     assert(digit > 0 && digit <= MAX_DIGIT);
   }
 
   public this() {
-    foreach (inout NumReel nr; numReel)
+    foreach (ref NumReel nr; numReel)
       nr = new NumReel;
     digit = 1;
   }
@@ -91,13 +91,13 @@ public class NumReel {
   float ofs;
   float velRatio;
 
-  invariant {
+  invariant() {
     assert(deg >= 0);
     assert(_targetDeg >= 0);
     assert(ofs >= 0);
   }
 
-  public static this() {
+  public static void init0() {
     rand = new Rand;
   }
 
@@ -162,7 +162,7 @@ public class NumReel {
     ofs *= 0.95f;
   }
 
-  public void targetDeg(float td) {
+  public float targetDeg(float td) {
     if ((td - _targetDeg) > 1)
       ofs += 0.1f;
     return _targetDeg = td;
@@ -207,14 +207,14 @@ public class NumIndicator: Actor {
   int targetIdx;
   int targetNum;
 
-  invariant {
+  invariant() {
     assert(targetY <= TARGET_Y_MAX && targetY >= TARGET_Y_MIN);
     assert(pos.x < 15 && pos.x > -15);
     assert(pos.y < 20 && pos.y > -20);
     assert(vel.x < 10 && vel.x > -10);
     assert(vel.y < 10 && vel.y > -10);
     assert(alpha >= 0 && alpha <= 1);
-    foreach (Target t; target) {
+    foreach (const(Target) t; target) {
       assert(t.pos.x < 15 && t.pos.x > -15);
       assert(t.pos.y < 20 && t.pos.y > -20);
       assert(t.initialVelRatio >= 0);
@@ -224,7 +224,7 @@ public class NumIndicator: Actor {
     assert(targetNum >= 0 && targetNum <= 4);
   }
 
-  public static this() {
+  public static void init0() {
     rand = new Rand;
     targetY = TARGET_Y_MIN;
   }
@@ -254,7 +254,7 @@ public class NumIndicator: Actor {
   public this() {
     pos = new Vector;
     vel = new Vector;
-    foreach (inout Target t; target) {
+    foreach (ref Target t; target) {
       t.pos = new Vector;
       t.initialVelRatio = 0;
       t.size = 0;
@@ -263,7 +263,7 @@ public class NumIndicator: Actor {
     alpha = 1;
   }
 
-  public void init(Object[] args) {
+  public override void init(Object[] args) {
     scoreReel = cast(ScoreReel) args[0];
   }
 
@@ -320,12 +320,14 @@ public class NumIndicator: Actor {
       vel.y = 0.3f + rand.nextSignedFloat(0.05f);
       decTargetY();
       break;
+    default:
+      break;
     }
     vel *= target[targetIdx].initialVelRatio;
     cnt = target[targetIdx].cnt;
   }
 
-  public void move() {
+  public override void move() {
     if (targetIdx < 0)
       return;
     Vector tp = target[targetIdx].pos;
@@ -341,6 +343,8 @@ public class NumIndicator: Actor {
       pos.x += (tp.x - pos.x) * 0.1f;
       vel.y += (tp.y - pos.y) * 0.0036f;
       alpha *= 0.97f;
+      break;
+    default:
       break;
     }
     vel *= 0.98f;
@@ -364,13 +368,15 @@ public class NumIndicator: Actor {
         vel.y *= -0.05f;
       }
       break;
+    default:
+      break;
     }
     cnt--;
     if (cnt < 0)
       gotoNextTarget();
   }
 
-  public void draw() {
+  public override void draw() {
     Screen.setColor(alpha, alpha, alpha);
     switch (type) {
     case IndicatorType.SCORE:
@@ -379,6 +385,8 @@ public class NumIndicator: Actor {
     case IndicatorType.MULTIPLIER:
       Screen.setColor(alpha, alpha, alpha);
       Letter.drawNumSign(n, pos.x, pos.y, size, Letter.LINE_COLOR, 33, 3);
+      break;
+    default:
       break;
     }
   }

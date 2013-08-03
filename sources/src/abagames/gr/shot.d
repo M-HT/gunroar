@@ -42,7 +42,7 @@ public class Shot: Actor {
   int _damage;
   bool lance;
 
-  invariant {
+  invariant() {
     assert(pos.x < 15 && pos.x > -15);
     assert(pos.y < 20 && pos.y > -20);
     assert(cnt >= 0);

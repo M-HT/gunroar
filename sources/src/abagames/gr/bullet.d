@@ -44,7 +44,7 @@ public class Bullet: Actor {
   BulletShape shape;
   int _enemyIdx;
 
-  invariant {
+  invariant() {
     assert(pos.x < 15 && pos.x > -15);
     assert(pos.y < 40 && pos.y > -20);
     assert(ppos.x < 15 && ppos.x > -15);
@@ -177,10 +177,10 @@ public class Bullet: Actor {
     if (ox + oy < 0.5f) {
     //if (shape.checkCollision(ox, oy, s)) {
       shot.removeHitToBullet();
-      Smoke s = smokes.getInstance();
-      if (s)
-        s.set(pos, sin(deg) * speed, cos(deg) * speed, 0,
-              Smoke.SmokeType.SPARK, 30, size * 0.5f);
+      Smoke s1 = smokes.getInstance();
+      if (s1)
+        s1.set(pos, sin(deg) * speed, cos(deg) * speed, 0,
+               Smoke.SmokeType.SPARK, 30, size * 0.5f);
       remove();
     }
   }

@@ -58,7 +58,7 @@ public class Field {
   Vector screenPos;
   PlatformPos[SCREEN_BLOCK_SIZE_X * NEXT_BLOCK_AREA_SIZE] platformPos;
   int platformPosNum;
-  float[3][6][TIME_COLOR_INDEX] baseColorTime = [
+  float[3][6][cast(uint)TIME_COLOR_INDEX] baseColorTime = [
     [[0.15f, 0.15f, 0.3f], [0.25f, 0.25f, 0.5f], [0.35f, 0.35f, 0.45f],
      [0.6f, 0.7f, 0.35f], [0.45f, 0.8f, 0.3f], [0.2f, 0.6f, 0.1f]],
     [[0.1f, 0.1f, 0.3f], [0.2f, 0.2f, 0.5f], [0.3f, 0.3f, 0.4f],
@@ -73,7 +73,7 @@ public class Field {
   float[3][6] baseColor;
   float time;
 
-  invariant {
+  invariant() {
     assert(_lastScrollY >= 0 && _lastScrollY < 10);
     assert(screenPos.x < 15 && screenPos.x > -15);
     assert(screenPos.y < 40 && screenPos.y > -20);
@@ -86,7 +86,7 @@ public class Field {
     _size = new Vector(SCREEN_BLOCK_SIZE_X / 2 * 0.9f, SCREEN_BLOCK_SIZE_Y / 2 * 0.8f);
     _outerSize = new Vector(SCREEN_BLOCK_SIZE_X / 2, SCREEN_BLOCK_SIZE_Y / 2);
     screenPos = new Vector;
-    foreach (inout PlatformPos pp; platformPos)
+    foreach (ref PlatformPos pp; platformPos)
       pp.pos = new Vector;
     _lastScrollY = 0;
     platformPosNum = 0;
@@ -199,6 +199,8 @@ public class Field {
           case 4:
             b = 2;
             break;
+          default:
+            break;
           }
         } else {
           switch (c) {
@@ -210,6 +212,8 @@ public class Field {
           case 3:
           case 4:
             b = -1;
+            break;
+          default:
             break;
           }
         }
@@ -255,6 +259,8 @@ public class Field {
         cx = rand.nextInt(cast(int) (BLOCK_SIZE_X * 0.4f)) - cast(int) (BLOCK_SIZE_X * 0.2f);
       else
         cx = rand.nextInt(cast(int) (BLOCK_SIZE_X * 0.4f)) + cast(int) (BLOCK_SIZE_X * 0.8f);
+      break;
+    default:
       break;
     }
     int cy = rand.nextInt(cast(int) (NEXT_BLOCK_AREA_SIZE * 0.6f)) + cast(int) (NEXT_BLOCK_AREA_SIZE * 0.2f);

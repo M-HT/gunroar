@@ -16,19 +16,19 @@ private import abagames.util.sdl.sdlexception;
  */
 public class Texture {
  public:
-  static char[] imagesDir = "images/";
+  static string imagesDir = "images/";
   static SDL_Surface*[char[]] surface;
  private:
-  GLuint num, maskNum;
+  GLuint[] num, maskNum;
   int textureNum, maskTextureNum;
   Uint32[128 * 128] pixels;
   Uint32[128 * 128] maskPixels;
 
-  public static SDL_Surface* loadBmp(char[] name) {
+  public static SDL_Surface* loadBmp(const char[] name) {
     if (name in surface) {
       return surface[name];
     } else {
-      char[] fileName = imagesDir ~ name;
+      const char[] fileName = imagesDir ~ name;
       SDL_Surface *s = SDL_LoadBMP(std.string.toStringz(fileName));
       if (!s)
         throw new SDLInitFailedException("Unable to load: " ~ fileName);
@@ -55,17 +55,18 @@ public class Texture {
     }
   }
 
-  public this(char[] name) {
+  public this(const char[] name) {
     SDL_Surface *s = loadBmp(name);
-    glGenTextures(1, &num);
-    glBindTexture(GL_TEXTURE_2D, num);
-    gluBuild2DMipmaps(GL_TEXTURE_2D, 4, s.w, s.h, 
+    num.length = 1;
+    glGenTextures(1, num.ptr);
+    glBindTexture(GL_TEXTURE_2D, num[0]);
+    gluBuild2DMipmaps(GL_TEXTURE_2D, 4, s.w, s.h,
                       GL_RGBA, GL_UNSIGNED_BYTE, s.pixels);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   }
 
-  public this(char[] name, int sx, int sy, int xn, int yn, int panelWidth, int panelHeight,
+  public this(const char[] name, int sx, int sy, int xn, int yn, int panelWidth, int panelHeight,
               Uint32 maskColor = 0xffffffffu) {
     SDL_Surface *s = loadBmp(name);
     Uint32* surfacePixels = cast(Uint32*) s.pixels;
@@ -76,10 +77,12 @@ public class Texture {
               int sx, int sy, int xn, int yn, int panelWidth, int panelHeight,
               Uint32 maskColor = 0xffffffffu) {
     textureNum = xn * yn;
-    glGenTextures(textureNum, &num);
+    num.length = textureNum;
+    glGenTextures(textureNum, num.ptr);
     if (maskColor != 0xffffffffu) {
       maskTextureNum = textureNum;
-      glGenTextures(maskTextureNum, &maskNum);
+      maskNum.length = maskTextureNum;
+      glGenTextures(maskTextureNum, maskNum.ptr);
     }
     int ti = 0;
     for (int oy = 0; oy < yn; oy++) {
@@ -101,15 +104,15 @@ public class Texture {
             pi++;
           }
         }
-        glBindTexture(GL_TEXTURE_2D, num + ti);
+        glBindTexture(GL_TEXTURE_2D, num[ti]);
         gluBuild2DMipmaps(GL_TEXTURE_2D, 4, panelWidth, panelHeight,
-                          GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+                          GL_RGBA, GL_UNSIGNED_BYTE, pixels.ptr);
         glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR_MIPMAP_NEAREST);
         glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
         if (maskColor != 0xffffffffu) {
-          glBindTexture(GL_TEXTURE_2D, maskNum + ti);
+          glBindTexture(GL_TEXTURE_2D, maskNum[ti]);
           gluBuild2DMipmaps(GL_TEXTURE_2D, 4, panelWidth, panelHeight,
-                            GL_RGBA, GL_UNSIGNED_BYTE, maskPixels);
+                            GL_RGBA, GL_UNSIGNED_BYTE, maskPixels.ptr);
           glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR_MIPMAP_NEAREST);
           glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
         }
@@ -119,16 +122,19 @@ public class Texture {
   }
 
   public void close() {
-    glDeleteTextures(textureNum, &num);
-    if (maskTextureNum > 0)
-      glDeleteTextures(maskTextureNum, &maskNum);
+    glDeleteTextures(textureNum, num.ptr);
+    num.length = 0;
+    if (maskTextureNum > 0) {
+      glDeleteTextures(maskTextureNum, maskNum.ptr);
+      maskNum.length = 0;
+    }
   }
 
   public void bind(int idx = 0) {
-    glBindTexture(GL_TEXTURE_2D, num + idx);
+    glBindTexture(GL_TEXTURE_2D, num[idx]);
   }
 
   public void bindMask(int idx = 0) {
-    glBindTexture(GL_TEXTURE_2D, maskNum + idx);
+    glBindTexture(GL_TEXTURE_2D, maskNum[idx]);
   }
 }

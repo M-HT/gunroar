@@ -100,7 +100,7 @@ public class Letter {
     return idx;
   }
 
-  public static void drawString(char[] str, float lx, float y, float s,
+  public static void drawString(const char[] str, float lx, float y, float s,
                                 int d = Direction.TO_RIGHT, int cl = 0,
                                 bool rev = false, float od = 0) {
     lx += LETTER_WIDTH * s / 2;
@@ -120,6 +120,8 @@ public class Letter {
       break;
     case Direction.TO_UP:
       ld = 270;
+      break;
+    default:
       break;
     }
     ld += od;
@@ -144,6 +146,8 @@ public class Letter {
           break;
         case Direction.TO_UP:
           y -= s * LETTER_WIDTH;
+          break;
+        default:
           break;
         }
       } else {
@@ -317,8 +321,8 @@ public class Letter {
     glVertex3f( width / 3 * 1,  height / 2, 0);
     glVertex3f(-width / 3 * 1,  height / 2, 0);
   }
-  
-  private static float[5][16][] spData = 
+
+  private static float[5][16][] spData =
     [[
      [0, 1.15f, 0.65f, 0.3f, 0],
      [-0.6f, 0.55f, 0.65f, 0.3f, 90], [0.6f, 0.55f, 0.65f, 0.3f, 90],

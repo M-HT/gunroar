@@ -5,7 +5,7 @@
  */
 module abagames.gr.prefmanager;
 
-private import std.stream;
+private import std.stdio;
 private import abagames.util.prefmanager;
 private import abagames.gr.gamemanager;
 
@@ -16,7 +16,7 @@ public class PrefManager: abagames.util.prefmanager.PrefManager {
  private:
   static const int VERSION_NUM = 14;
   static const int VERSION_NUM_13 = 13;
-  static const char[] PREF_FILE = "gr.prf";
+  static string PREF_FILE = "gr.prf";
   PrefData _prefData;
 
   public this() {
@@ -24,18 +24,18 @@ public class PrefManager: abagames.util.prefmanager.PrefManager {
   }
 
   public void load() {
-    auto File fd = new File;
+    scope File fd;
     try {
-      int ver;
+      int read_data[1];
       fd.open(PREF_FILE);
-      fd.read(ver);
-      if (ver == VERSION_NUM_13)
+      fd.rawRead(read_data);
+      if (read_data[0] == VERSION_NUM_13)
         _prefData.loadVer13(fd);
-      else if (ver != VERSION_NUM)
-        throw new Error("Wrong version num");
+      else if (read_data[0] != VERSION_NUM)
+        throw new Exception("Wrong version num");
       else
         _prefData.load(fd);
-    } catch (Object e) {
+    } catch (Exception e) {
       _prefData.init();
     } finally {
       if (fd.isOpen())
@@ -44,11 +44,15 @@ public class PrefManager: abagames.util.prefmanager.PrefManager {
   }
 
   public void save() {
-    auto File fd = new File;
-    fd.create(PREF_FILE);
-    fd.write(VERSION_NUM);
-    _prefData.save(fd);
-    fd.close();
+    scope File fd;
+    try {
+      fd.open(PREF_FILE, "wb");
+      int write_data[1] = [VERSION_NUM];
+      fd.rawWrite(write_data);
+      _prefData.save(fd);
+    } finally {
+      fd.close();
+    }
   }
 
   public PrefData prefData() {
@@ -63,28 +67,32 @@ public class PrefData {
   int _gameMode;
 
   public void init() {
-    foreach (inout int hs; _highScore)
+    foreach (ref int hs; _highScore)
       hs = 0;
     _gameMode = 0;
   }
 
   public void load(File fd) {
-    foreach (inout int hs; _highScore)
-      fd.read(hs);
-    fd.read(_gameMode);
+    fd.rawRead(_highScore);
+    int read_data[1];
+    fd.rawRead(read_data);
+    _gameMode = read_data[0];
   }
 
   public void loadVer13(File fd) {
     init();
-    for (int i = 0; i < 3; i++)
-      fd.read(_highScore[i]);
-    fd.read(_gameMode);
+    int read_data13[3];
+    fd.rawRead(read_data13);
+    _highScore[0..3] = read_data13[];
+    int read_data[1];
+    fd.rawRead(read_data);
+    _gameMode = read_data[0];
   }
 
   public void save(File fd) {
-    foreach (inout int hs; _highScore)
-      fd.write(hs);
-    fd.write(_gameMode);
+    fd.rawWrite(_highScore);
+    int write_data[1] = [_gameMode];
+    fd.rawWrite(write_data);
   }
 
   public void recordGameMode(int gm) {

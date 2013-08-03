@@ -43,7 +43,7 @@ public class ActorPool(T) {
 
   protected void createActors(int n, Object[] args = null) {
     actor = new T[n];
-    foreach (inout T a; actor) {
+    foreach (ref T a; actor) {
       a = new T;
       a.exists = false;
       a.init(args);
@@ -55,8 +55,8 @@ public class ActorPool(T) {
     for (int i = 0; i < actor.length; i++) {
       actorIdx--;
       if (actorIdx < 0)
-        actorIdx = actor.length - 1;
-      if (!actor[actorIdx].exists) 
+        actorIdx = cast(int)(actor.length - 1);
+      if (!actor[actorIdx].exists)
         return actor[actorIdx];
     }
     return null;
@@ -65,7 +65,7 @@ public class ActorPool(T) {
   public T getInstanceForced() {
     actorIdx--;
     if (actorIdx < 0)
-      actorIdx = actor.length - 1;
+      actorIdx = cast(int)(actor.length - 1);
     return actor[actorIdx];
   }
 
@@ -85,7 +85,7 @@ public class ActorPool(T) {
       r.exists = false;
     return rsl;
   }
-  
+
   public void move() {
     foreach (T ac; actor)
       if (ac.exists)

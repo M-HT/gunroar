@@ -7,6 +7,7 @@ module abagames.util.sdl.luminous;
 
 private import std.math;
 private import std.string;
+private import std.c.string;
 private import opengl;
 private import abagames.util.actor;
 
@@ -32,7 +33,7 @@ public class LuminousScreen {
   }
 
   private void makeLuminousTexture() {
-    uint *data = td;
+    uint *data = td.ptr;
     int i;
     memset(data, 0, luminousTextureWidth * luminousTextureHeight * 4 * uint.sizeof);
     glGenTextures(1, &luminousTexture);
@@ -58,7 +59,7 @@ public class LuminousScreen {
 
   public void endRender() {
     glBindTexture(GL_TEXTURE_2D, luminousTexture);
-    glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 
+    glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,
                      0, 0, luminousTextureWidth, luminousTextureHeight, 0);
     glViewport(0, 0, screenWidth, screenHeight);
   }

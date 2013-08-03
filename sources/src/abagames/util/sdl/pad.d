@@ -6,7 +6,7 @@
 module abagames.util.sdl.pad;
 
 private import std.string;
-private import std.stream;
+private import std.stdio;
 private import SDL;
 private import abagames.util.sdl.input;
 private import abagames.util.sdl.recordableinput;
@@ -49,7 +49,7 @@ public class Pad: Input {
       x = SDL_JoystickGetAxis(stick, 0);
       y = SDL_JoystickGetAxis(stick, 1);
     }
-    if (keys[SDLK_RIGHT] == SDL_PRESSED || keys[SDLK_KP6] == SDL_PRESSED || 
+    if (keys[SDLK_RIGHT] == SDL_PRESSED || keys[SDLK_KP6] == SDL_PRESSED ||
         keys[SDLK_d] == SDL_PRESSED || keys[SDLK_l] == SDL_PRESSED ||
         x > JOYSTICK_AXIS)
       state.dir |= PadState.Dir.RIGHT;
@@ -77,7 +77,7 @@ public class Pad: Input {
              SDL_JoystickGetButton(stick, 9) + SDL_JoystickGetButton(stick, 10);
     }
     if (keys[SDLK_z] == SDL_PRESSED || keys[SDLK_PERIOD] == SDL_PRESSED ||
-        keys[SDLK_LCTRL] == SDL_PRESSED || keys[SDLK_RCTRL] == SDL_PRESSED || 
+        keys[SDLK_LCTRL] == SDL_PRESSED || keys[SDLK_RCTRL] == SDL_PRESSED ||
         btn1) {
       if (!buttonReversed)
         state.button |= PadState.Button.A;
@@ -141,15 +141,15 @@ public class PadState {
   }
 
   public void read(File fd) {
-    int s;
-    fd.read(s);
-    dir = s & (Dir.UP | Dir.DOWN | Dir.LEFT | Dir.RIGHT);
-    button = s & Button.ANY;
+    int read_data[1];
+    fd.rawRead(read_data);
+    dir = read_data[0] & (Dir.UP | Dir.DOWN | Dir.LEFT | Dir.RIGHT);
+    button = read_data[0] & Button.ANY;
   }
 
   public void write(File fd) {
-    int s = dir | button;
-    fd.write(s);
+    int write_data[1] = [dir | button];
+    fd.rawWrite(write_data);
   }
 
   public bool equals(PadState s) {
@@ -164,7 +164,11 @@ public class RecordablePad: Pad {
   mixin RecordableInput!(PadState);
  private:
 
-  public PadState getState(bool doRecord = true) {
+  public override PadState getState() {
+    return getState(true);
+  }
+
+  public PadState getState(bool doRecord) {
     PadState s = super.getState();
     if (doRecord)
       record(s);
