@@ -7,7 +7,11 @@ module abagames.gr.shot;
 
 private import std.math;
 private import std.string;
-private import opengl;
+version (USE_GLES) {
+  private import opengles;
+} else {
+  private import opengl;
+}
 private import abagames.util.actor;
 private import abagames.util.vector;
 private import abagames.util.rand;
@@ -192,20 +196,26 @@ public class Shot: Actor {
           glTranslatef(x, y, 0);
           glRotatef(-_deg * 180 / PI, 0, 0, 1);
           glRotatef(d, 0, 1, 0);
-          Screen.setColor(0.4f, 0.8f, 0.8f, a);
-          glBegin(GL_LINE_LOOP);
-          glVertex3f(-size, LANCE_SPEED, size / 2);
-          glVertex3f(size, LANCE_SPEED, size / 2);
-          glVertex3f(size, -LANCE_SPEED, size / 2);
-          glVertex3f(-size, -LANCE_SPEED, size / 2);
-          glEnd();
-          Screen.setColor(0.2f, 0.5f, 0.5f, a / 2);
-          glBegin(GL_TRIANGLE_FAN);
-          glVertex3f(-size, LANCE_SPEED, size / 2);
-          glVertex3f(size, LANCE_SPEED, size / 2);
-          glVertex3f(size, -LANCE_SPEED, size / 2);
-          glVertex3f(-size, -LANCE_SPEED, size / 2);
-          glEnd();
+          {
+            const GLfloat[3*4] shotVertices = [
+              -size,  LANCE_SPEED, size / 2,
+               size,  LANCE_SPEED, size / 2,
+               size, -LANCE_SPEED, size / 2,
+              -size, -LANCE_SPEED, size / 2
+            ];
+
+            glEnableClientState(GL_VERTEX_ARRAY);
+            glVertexPointer(3, GL_FLOAT, 0, cast(void *)(shotVertices.ptr));
+
+            Screen.setColor(0.4f, 0.8f, 0.8f, a);
+            glDrawArrays(GL_LINE_LOOP, 0, 4);
+
+            Screen.setColor(0.2f, 0.5f, 0.5f, a / 2);
+            glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+
+            glDisableClientState(GL_VERTEX_ARRAY);
+
+          }
           glPopMatrix();
           d += 60;
         }
@@ -253,22 +263,35 @@ public class ShotPool: ActorPool!(Shot) {
 }
 
 public class ShotShape: CollidableDrawable {
-  protected override void createDisplayList() {
+  static const GLfloat[3*(3*4)] shapeVertices = [
+     0     ,  0.3f,  0.1f  ,
+     0.066f,  0.3f, -0.033f,
+     0.1f  , -0.3f, -0.05f ,
+     0     , -0.3f,  0.15f ,
+     0.066f,  0.3f, -0.033f,
+    -0.066f,  0.3f, -0.033f,
+    -0.1f  , -0.3f, -0.05f ,
+     0.1f  , -0.3f, -0.05f ,
+    -0.066f,  0.3f, -0.033f,
+     0     ,  0.3f,  0.1f  ,
+     0     , -0.3f,  0.15f ,
+    -0.1f  , -0.3f, -0.05f
+  ];
+
+  protected override void prepareShape() {
+  }
+
+  protected override void drawShape() {
     Screen.setColor(0.1f, 0.33f, 0.1f);
-    glBegin(GL_QUADS);
-    glVertex3f(0, 0.3f, 0.1f);
-    glVertex3f(0.066f, 0.3f, -0.033f);
-    glVertex3f(0.1f, -0.3f, -0.05f);
-    glVertex3f(0, -0.3f, 0.15f);
-    glVertex3f(0.066f, 0.3f, -0.033f);
-    glVertex3f(-0.066f, 0.3f, -0.033f);
-    glVertex3f(-0.1f, -0.3f, -0.05f);
-    glVertex3f(0.1f, -0.3f, -0.05f);
-    glVertex3f(-0.066f, 0.3f, -0.033f);
-    glVertex3f(0, 0.3f, 0.1f);
-    glVertex3f(0, -0.3f, 0.15f);
-    glVertex3f(-0.1f, -0.3f, -0.05f);
-    glEnd();
+
+    glEnableClientState(GL_VERTEX_ARRAY);
+    glVertexPointer(3, GL_FLOAT, 0, cast(void *)(shapeVertices.ptr));
+
+    glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+    glDrawArrays(GL_TRIANGLE_FAN, 4, 4);
+    glDrawArrays(GL_TRIANGLE_FAN, 8, 4);
+
+    glDisableClientState(GL_VERTEX_ARRAY);
   }
 
   protected override void setCollision() {

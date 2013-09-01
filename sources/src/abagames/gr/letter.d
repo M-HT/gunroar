@@ -6,8 +6,11 @@
 module abagames.gr.letter;
 
 private import std.math;
-private import opengl;
-private import abagames.util.sdl.displaylist;
+version (USE_GLES) {
+  private import opengles;
+} else {
+  private import opengl;
+}
 private import abagames.gr.screen;
 
 /**
@@ -15,7 +18,6 @@ private import abagames.gr.screen;
  */
 public class Letter {
  public:
-  static DisplayList displayList;
   static const float LETTER_WIDTH = 2.1f;
   static const float LETTER_HEIGHT = 3.0f;
   static const int LINE_COLOR = 2;
@@ -24,22 +26,16 @@ public class Letter {
  private:
   static const float[][] COLOR_RGB = [[1, 1, 1], [0.9, 0.7, 0.5]];
   static const int LETTER_NUM = 44;
-  static const int DISPLAY_LIST_NUM = LETTER_NUM * COLOR_NUM;
+  static const int partNumVertices = 6;
+  static GLfloat[3*partNumVertices][][LETTER_NUM] letterVertices;
 
   public static void init() {
-    displayList = new DisplayList(DISPLAY_LIST_NUM);
-    displayList.resetList();
-    for (int j = 0; j < COLOR_NUM; j++) {
-      for (int i = 0; i < LETTER_NUM; i++) {
-        displayList.newList();
-        setLetter(i, j);
-        displayList.endList();
-      }
+    foreach (i; 0..LETTER_NUM) {
+      prepareLetter(i);
     }
   }
 
   public static void close() {
-    displayList.close();
   }
 
   public static float getWidth(int n ,float s) {
@@ -50,8 +46,34 @@ public class Letter {
     return s * LETTER_HEIGHT;
   }
 
-  public static void drawLetter(int n, int c) {
-    displayList.call(n + c * LETTER_NUM);
+  public static void drawLetter(int n, int type) {
+    const bool coloredPart = (type == 0 || type == 1);
+
+    glEnableClientState(GL_VERTEX_ARRAY);
+
+    if (coloredPart || type == POLY_COLOR) {
+      if (coloredPart) {
+        Screen.setColor(COLOR_RGB[type][0], COLOR_RGB[type][1], COLOR_RGB[type][2], 0.5);
+      }
+      foreach (i; 0..letterVertices[n].length) {
+        glVertexPointer(3, GL_FLOAT, 0, cast(void *)(letterVertices[n][i].ptr));
+
+        glDrawArrays(GL_TRIANGLE_FAN, 0, partNumVertices);
+      }
+    }
+
+    if (coloredPart || type == LINE_COLOR) {
+      if (coloredPart) {
+        Screen.setColor(COLOR_RGB[type][0], COLOR_RGB[type][1], COLOR_RGB[type][2]);
+      }
+      foreach (i; 0..letterVertices[n].length) {
+        glVertexPointer(3, GL_FLOAT, 0, cast(void *)(letterVertices[n][i].ptr));
+
+        glDrawArrays(GL_LINE_LOOP, 0, partNumVertices);
+      }
+    }
+
+    glDisableClientState(GL_VERTEX_ARRAY);
   }
 
   private static void drawLetter(int n, float x, float y, float s, float d, int c) {
@@ -59,7 +81,7 @@ public class Letter {
     glTranslatef(x, y, 0);
     glScalef(s, s, s);
     glRotatef(d, 0, 0, 1);
-    displayList.call(n + c * LETTER_NUM);
+    drawLetter(n, c);
     glPopMatrix();
   }
 
@@ -68,7 +90,7 @@ public class Letter {
     glTranslatef(x, y, 0);
     glScalef(s, -s, s);
     glRotatef(d, 0, 0, 1);
-    displayList.call(n + c * LETTER_NUM);
+    drawLetter(n, c);
     glPopMatrix();
   }
 
@@ -251,7 +273,7 @@ public class Letter {
     }
   }
 
-  private static void setLetter(int idx, int c) {
+  private static void prepareLetter(int idx) {
     float x, y, length, size, t;
     float deg;
     for (int i = 0;; i++) {
@@ -267,59 +289,43 @@ public class Letter {
       x = -x;
       y = y;
       deg %= 180;
-      if (c == LINE_COLOR)
-        setBoxLine(x, y, size, length, deg);
-      else if (c == POLY_COLOR)
-        setBoxPoly(x, y, size, length, deg);
-      else
-        setBox(x, y, size, length, deg,
-                COLOR_RGB[c][0], COLOR_RGB[c][1], COLOR_RGB[c][2]);
+      prepareBoxPart(idx, x, y, size, length, deg);
     }
   }
 
-  private static void setBox(float x, float y, float width, float height, float deg,
-                             float r, float g, float b) {
-    glPushMatrix();
-    glTranslatef(x - width / 2, y - height / 2, 0);
-    glRotatef(deg, 0, 0, 1);
-    Screen.setColor(r, g, b, 0.5);
-    glBegin(GL_TRIANGLE_FAN);
-    setBoxPart(width, height);
-    glEnd();
-    Screen.setColor(r, g, b);
-    glBegin(GL_LINE_LOOP);
-    setBoxPart(width, height);
-    glEnd();
-    glPopMatrix();
-  }
+  private static void prepareBoxPart(int idx, float x, float y, float width, float height, float deg) {
+    GLfloat[3*partNumVertices] partVertices = [
+      -width / 2, 0, 0,
+      -width / 3 * 1, -height / 2, 0,
+       width / 3 * 1, -height / 2, 0,
+       width / 2, 0, 0,
+       width / 3 * 1,  height / 2, 0,
+      -width / 3 * 1,  height / 2, 0
+    ];
 
-  private static void setBoxLine(float x, float y, float width, float height, float deg) {
-    glPushMatrix();
-    glTranslatef(x - width / 2, y - height / 2, 0);
-    glRotatef(deg, 0, 0, 1);
-    glBegin(GL_LINE_LOOP);
-    setBoxPart(width, height);
-    glEnd();
-    glPopMatrix();
-  }
+    if (deg != 0) {
+      // rotate part
 
-  private static void setBoxPoly(float x, float y, float width, float height, float deg) {
-    glPushMatrix();
-    glTranslatef(x - width / 2, y - height / 2, 0);
-    glRotatef(deg, 0, 0, 1);
-    glBegin(GL_TRIANGLE_FAN);
-    setBoxPart(width, height);
-    glEnd();
-    glPopMatrix();
-  }
+      const float cdeg = cos(deg * cast(float)(std.math.PI / 180));
+      const float sdeg = sin(deg * cast(float)(std.math.PI / 180));
 
-  private static void setBoxPart(float width, float height) {
-    glVertex3f(-width / 2, 0, 0);
-    glVertex3f(-width / 3 * 1, -height / 2, 0);
-    glVertex3f( width / 3 * 1, -height / 2, 0);
-    glVertex3f( width / 2, 0, 0);
-    glVertex3f( width / 3 * 1,  height / 2, 0);
-    glVertex3f(-width / 3 * 1,  height / 2, 0);
+      foreach (i; 0..partNumVertices) {
+        const float px = partVertices[3*i + 0];
+        const float py = partVertices[3*i + 1];
+
+        partVertices[3*i + 0] = cdeg * px - sdeg * py;
+        partVertices[3*i + 1] = sdeg * px + cdeg * py;
+      }
+    }
+
+    // move part
+    foreach (i; 0..partNumVertices) {
+      partVertices[3*i + 0] += x - width / 2;
+      partVertices[3*i + 1] += y - height / 2;
+    }
+
+    ++letterVertices[idx].length;
+    letterVertices[idx][letterVertices[idx].length - 1] = partVertices;
   }
 
   private static float[5][16][] spData =

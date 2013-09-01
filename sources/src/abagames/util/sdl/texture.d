@@ -6,8 +6,13 @@
 module abagames.util.sdl.texture;
 
 private import std.string;
-private import opengl;
-private import openglu;
+version (USE_GLES) {
+  private import opengles;
+  private import opengles_glu;
+} else {
+  private import opengl;
+  private import openglu;
+}
 private import SDL;
 private import abagames.util.sdl.sdlexception;
 
@@ -62,8 +67,8 @@ public class Texture {
     glBindTexture(GL_TEXTURE_2D, num[0]);
     gluBuild2DMipmaps(GL_TEXTURE_2D, 4, s.w, s.h,
                       GL_RGBA, GL_UNSIGNED_BYTE, s.pixels);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   }
 
   public this(const char[] name, int sx, int sy, int xn, int yn, int panelWidth, int panelHeight,
@@ -107,14 +112,14 @@ public class Texture {
         glBindTexture(GL_TEXTURE_2D, num[ti]);
         gluBuild2DMipmaps(GL_TEXTURE_2D, 4, panelWidth, panelHeight,
                           GL_RGBA, GL_UNSIGNED_BYTE, pixels.ptr);
-        glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR_MIPMAP_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
+        glTexParameterf(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR_MIPMAP_NEAREST);
+        glTexParameterf(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
         if (maskColor != 0xffffffffu) {
           glBindTexture(GL_TEXTURE_2D, maskNum[ti]);
           gluBuild2DMipmaps(GL_TEXTURE_2D, 4, panelWidth, panelHeight,
                             GL_RGBA, GL_UNSIGNED_BYTE, maskPixels.ptr);
-          glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR_MIPMAP_NEAREST);
-          glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
+          glTexParameterf(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR_MIPMAP_NEAREST);
+          glTexParameterf(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
         }
         ti++;
       }

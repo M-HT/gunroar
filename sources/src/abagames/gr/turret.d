@@ -6,7 +6,11 @@
 module abagames.gr.turret;
 
 private import std.math;
-private import opengl;
+version (USE_GLES) {
+  private import opengles;
+} else {
+  private import opengl;
+}
 private import abagames.util.vector;
 private import abagames.util.actor;
 private import abagames.util.rand;
@@ -213,40 +217,90 @@ public class Turret {
     if (startCnt < 12)
       a = cast(float) startCnt / 12;
     float td = baseDeg + deg;
+
+    GLfloat[2*2] lineVertices;
+    GLfloat[4*2] lineColors;
+    GLfloat[2*4] quadVertices;
+    GLfloat[4*4] quadColors;
+
+    glEnableClientState(GL_VERTEX_ARRAY);
+    glEnableClientState(GL_COLOR_ARRAY);
+
     if (spec.nway <= 1) {
-      glBegin(GL_LINE_STRIP);
-      Screen.setColor(0.9f, 0.1f, 0.1f, a);
-      glVertex2f(pos.x + sin(td) * spec.minRange, pos.y + cos(td) * spec.minRange);
-      Screen.setColor(0.9f, 0.1f, 0.1f, a * 0.5f);
-      glVertex2f(pos.x + sin(td) * spec.maxRange, pos.y + cos(td) * spec.maxRange);
-      glEnd();
+      foreach (i; 0..2) {
+        lineColors[4*i + 0] = 0.9f * Screen.brightness;
+        lineColors[4*i + 1] = 0.1f * Screen.brightness;
+        lineColors[4*i + 2] = 0.1f * Screen.brightness;
+        lineColors[4*i + 3] = (i == 0)?(a):(a * 0.5f);
+      }
+
+      lineVertices[0*2 + 0] = pos.x + sin(td) * spec.minRange;
+      lineVertices[0*2 + 1] = pos.y + cos(td) * spec.minRange;
+      lineVertices[1*2 + 0] = pos.x + sin(td) * spec.maxRange;
+      lineVertices[1*2 + 1] = pos.y + cos(td) * spec.maxRange;
+
+      glVertexPointer(2, GL_FLOAT, 0, cast(void *)(lineVertices.ptr));
+      glColorPointer(4, GL_FLOAT, 0, cast(void *)(lineColors.ptr));
+
+      glDrawArrays(GL_LINE_STRIP, 0, 2);
     } else {
       td -= spec.nwayAngle * (spec.nway - 1) / 2;
-      glBegin(GL_LINE_STRIP);
-      Screen.setColor(0.9f, 0.1f, 0.1f, a * 0.75f);
-      glVertex2f(pos.x + sin(td) * spec.minRange, pos.y + cos(td) * spec.minRange);
-      Screen.setColor(0.9f, 0.1f, 0.1f, a * 0.25f);
-      glVertex2f(pos.x + sin(td) * spec.maxRange, pos.y + cos(td) * spec.maxRange);
-      glEnd();
-      glBegin(GL_QUADS);
-      for (int i = 0; i < spec.nway - 1; i++) {
-        Screen.setColor(0.9f, 0.1f, 0.1f, a * 0.3f);
-        glVertex2f(pos.x + sin(td) * spec.minRange, pos.y + cos(td) * spec.minRange);
-        Screen.setColor(0.9f, 0.1f, 0.1f, a * 0.05f);
-        glVertex2f(pos.x + sin(td) * spec.maxRange, pos.y + cos(td) * spec.maxRange);
-        td += spec.nwayAngle;
-        glVertex2f(pos.x + sin(td) * spec.maxRange, pos.y + cos(td) * spec.maxRange);
-        Screen.setColor(0.9f, 0.1f, 0.1f, a * 0.3f);
-        glVertex2f(pos.x + sin(td) * spec.minRange, pos.y + cos(td) * spec.minRange);
+
+      foreach (i; 0..2) {
+        lineColors[4*i + 0] = 0.9f * Screen.brightness;
+        lineColors[4*i + 1] = 0.1f * Screen.brightness;
+        lineColors[4*i + 2] = 0.1f * Screen.brightness;
+        lineColors[4*i + 3] = (i == 0)?(a * 0.75f):(a * 0.25f);
       }
-      glEnd();
-      glBegin(GL_LINE_STRIP);
-      Screen.setColor(0.9f, 0.1f, 0.1f, a * 0.75f);
-      glVertex2f(pos.x + sin(td) * spec.minRange, pos.y + cos(td) * spec.minRange);
-      Screen.setColor(0.9f, 0.1f, 0.1f, a * 0.25f);
-      glVertex2f(pos.x + sin(td) * spec.maxRange, pos.y + cos(td) * spec.maxRange);
-      glEnd();
+
+      lineVertices[0*2 + 0] = pos.x + sin(td) * spec.minRange;
+      lineVertices[0*2 + 1] = pos.y + cos(td) * spec.minRange;
+      lineVertices[1*2 + 0] = pos.x + sin(td) * spec.maxRange;
+      lineVertices[1*2 + 1] = pos.y + cos(td) * spec.maxRange;
+
+      glVertexPointer(2, GL_FLOAT, 0, cast(void *)(lineVertices.ptr));
+      glColorPointer(4, GL_FLOAT, 0, cast(void *)(lineColors.ptr));
+
+      glDrawArrays(GL_LINE_STRIP, 0, 2);
+
+
+      foreach (i; 0..4) {
+        quadColors[4*i + 0] = 0.9f * Screen.brightness;
+        quadColors[4*i + 1] = 0.1f * Screen.brightness;
+        quadColors[4*i + 2] = 0.1f * Screen.brightness;
+        quadColors[4*i + 3] = ((i == 0) || (i == 3))?(a * 0.3f):(a * 0.05f);
+      }
+
+      glVertexPointer(2, GL_FLOAT, 0, cast(void *)(quadVertices.ptr));
+      glColorPointer(4, GL_FLOAT, 0, cast(void *)(quadColors.ptr));
+
+      for (int i = 0; i < spec.nway - 1; i++) {
+        quadVertices[0*2 + 0] = pos.x + sin(td) * spec.minRange;
+        quadVertices[0*2 + 1] = pos.y + cos(td) * spec.minRange;
+        quadVertices[1*2 + 0] = pos.x + sin(td) * spec.maxRange;
+        quadVertices[1*2 + 1] = pos.y + cos(td) * spec.maxRange;
+        td += spec.nwayAngle;
+        quadVertices[2*2 + 0] = pos.x + sin(td) * spec.minRange;
+        quadVertices[2*2 + 1] = pos.y + cos(td) * spec.minRange;
+        quadVertices[3*2 + 0] = pos.x + sin(td) * spec.maxRange;
+        quadVertices[3*2 + 1] = pos.y + cos(td) * spec.maxRange;
+
+        glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+      }
+
+      lineVertices[0*2 + 0] = pos.x + sin(td) * spec.minRange;
+      lineVertices[0*2 + 1] = pos.y + cos(td) * spec.minRange;
+      lineVertices[1*2 + 0] = pos.x + sin(td) * spec.maxRange;
+      lineVertices[1*2 + 1] = pos.y + cos(td) * spec.maxRange;
+
+      glVertexPointer(2, GL_FLOAT, 0, cast(void *)(lineVertices.ptr));
+      glColorPointer(4, GL_FLOAT, 0, cast(void *)(lineColors.ptr));
+
+      glDrawArrays(GL_LINE_STRIP, 0, 2);
     }
+
+    glDisableClientState(GL_COLOR_ARRAY);
+    glDisableClientState(GL_VERTEX_ARRAY);
   }
 
   public bool checkCollision(float x, float y, Collidable c, Shot shot) {

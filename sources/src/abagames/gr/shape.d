@@ -6,7 +6,11 @@
 module abagames.gr.shape;
 
 private import std.math;
-private import opengl;
+version (USE_GLES) {
+  private import opengles;
+} else {
+  private import opengl;
+}
 private import abagames.util.vector;
 private import abagames.util.rand;
 private import abagames.util.sdl.shape;
@@ -35,6 +39,9 @@ public class BaseShape: DrawableShape {
   Vector[] pillarPos;
   Vector[] _pointPos;
   float[] _pointDeg;
+  GLenum[] shapeModes;
+  GLfloat[][] shapeVertices;
+  GLfloat[4][] shapeColors;
 
   invariant() {
     assert(wakePos.x < 15 && wakePos.x > -15);
@@ -79,26 +86,48 @@ public class BaseShape: DrawableShape {
     super();
   }
 
-  public override void createDisplayList() {
+  public override void prepareShape() {
     float height = size * 0.5f;
     float z = 0;
     float sz = 1;
     if (type == ShapeType.BRIDGE)
       z += height;
-    if (type != ShapeType.SHIP_DESTROYED)
-      Screen.setColor(r, g, b);
-    glBegin(GL_LINE_LOOP);
+
+    shapeModes.length = 1;
+    shapeVertices.length = 1;
+    shapeColors.length = 1;
+
+    int currentIndex = 0;
+
+    shapeModes[currentIndex] = GL_LINE_LOOP;
+    if (type != ShapeType.SHIP_DESTROYED) {
+      shapeColors[currentIndex][0] = r * Screen.brightness;
+      shapeColors[currentIndex][1] = g * Screen.brightness;
+      shapeColors[currentIndex][2] = b * Screen.brightness;
+      shapeColors[currentIndex][3] = 1;
+    } else {
+      shapeColors[currentIndex][0] = -1;
+    }
     if (type != ShapeType.BRIDGE)
-      createLoop(sz, z, false, true);
+      createLoop(shapeVertices[currentIndex], sz, z, false, true);
     else
-      createSquareLoop(sz, z, false, true);
-    glEnd();
+      createSquareLoop(shapeVertices[currentIndex], sz, z, false, true);
+
     if (type != ShapeType.SHIP_SHADOW && type != ShapeType.SHIP_DESTROYED &&
         type != ShapeType.PLATFORM_DESTROYED && type != ShapeType.TURRET_DESTROYED) {
-      Screen.setColor(r * 0.4f, g * 0.4f, b * 0.4f);
-      glBegin(GL_TRIANGLE_FAN);
-      createLoop(sz, z, true);
-      glEnd();
+      currentIndex++;
+      shapeModes.length = currentIndex + 1;
+      shapeVertices.length = currentIndex + 1;
+      shapeColors.length = currentIndex + 1;
+
+      shapeModes[currentIndex] = GL_TRIANGLE_FAN;
+
+      shapeColors[currentIndex][0] = r * 0.4f * Screen.brightness;
+      shapeColors[currentIndex][1] = g * 0.4f * Screen.brightness;
+      shapeColors[currentIndex][2] = b * 0.4f * Screen.brightness;
+      shapeColors[currentIndex][3] = 1;
+
+      createLoop(shapeVertices[currentIndex], sz, z, true);
     }
     switch (type) {
     case ShapeType.SHIP:
@@ -106,48 +135,98 @@ public class BaseShape: DrawableShape {
     case ShapeType.SHIP_SHADOW:
     case ShapeType.SHIP_DAMAGED:
     case ShapeType.SHIP_DESTROYED:
-      if (type != ShapeType.SHIP_DESTROYED)
-        Screen.setColor(r * 0.4f, g * 0.4f, b * 0.4f);
       for (int i = 0; i < 3; i++) {
         z -= height / 4;
         sz -= 0.2f;
-        glBegin(GL_LINE_LOOP);
-        createLoop(sz, z);
-        glEnd();
+
+        currentIndex++;
+        shapeModes.length = currentIndex + 1;
+        shapeVertices.length = currentIndex + 1;
+        shapeColors.length = currentIndex + 1;
+
+        shapeModes[currentIndex] = GL_LINE_LOOP;
+
+        if ((i == 0) && (type != ShapeType.SHIP_DESTROYED)) {
+          shapeColors[currentIndex][0] = r * 0.4f * Screen.brightness;
+          shapeColors[currentIndex][1] = g * 0.4f * Screen.brightness;
+          shapeColors[currentIndex][2] = b * 0.4f * Screen.brightness;
+          shapeColors[currentIndex][3] = 1;
+        } else {
+          shapeColors[currentIndex][0] = -1;
+        }
+
+        createLoop(shapeVertices[currentIndex], sz, z);
       }
       break;
     case ShapeType.PLATFORM:
     case ShapeType.PLATFORM_DAMAGED:
     case ShapeType.PLATFORM_DESTROYED:
-      Screen.setColor(r * 0.4f, g * 0.4f, b * 0.4f);
       for (int i = 0; i < 3; i++) {
         z -= height / 3;
+        bool firstIndex = (i == 0);
         foreach (Vector pp; pillarPos) {
-          glBegin(GL_LINE_LOOP);
-          createPillar(pp, size * 0.2f, z);
-          glEnd();
+          currentIndex++;
+          shapeModes.length = currentIndex + 1;
+          shapeVertices.length = currentIndex + 1;
+          shapeColors.length = currentIndex + 1;
+
+          shapeModes[currentIndex] = GL_LINE_LOOP;
+
+          if (firstIndex) {
+            firstIndex = false;
+            shapeColors[currentIndex][0] = r * 0.4f * Screen.brightness;
+            shapeColors[currentIndex][1] = g * 0.4f * Screen.brightness;
+            shapeColors[currentIndex][2] = b * 0.4f * Screen.brightness;
+            shapeColors[currentIndex][3] = 1;
+          } else {
+            shapeColors[currentIndex][0] = -1;
+          }
+
+          createPillar(shapeVertices[currentIndex], pp, size * 0.2f, z);
         }
       }
       break;
     case ShapeType.BRIDGE:
     case ShapeType.TURRET:
     case ShapeType.TURRET_DAMAGED:
-      Screen.setColor(r * 0.6f, g * 0.6f, b * 0.6f);
       z += height;
       sz -= 0.33f;
-      glBegin(GL_LINE_LOOP);
+
+      currentIndex++;
+      shapeModes.length = currentIndex + 1;
+      shapeVertices.length = currentIndex + 1;
+      shapeColors.length = currentIndex + 1;
+
+      shapeModes[currentIndex] = GL_LINE_LOOP;
+
+      shapeColors[currentIndex][0] = r * 0.6f * Screen.brightness;
+      shapeColors[currentIndex][1] = g * 0.6f * Screen.brightness;
+      shapeColors[currentIndex][2] = b * 0.6f * Screen.brightness;
+      shapeColors[currentIndex][3] = 1;
+
       if (type == ShapeType.BRIDGE)
-        createSquareLoop(sz, z);
+        createSquareLoop(shapeVertices[currentIndex], sz, z);
       else
-        createSquareLoop(sz, z / 2, false, 3);
-      glEnd();
-      Screen.setColor(r * 0.25f, g * 0.25f, b * 0.25f);
-      glBegin(GL_TRIANGLE_FAN);
+        createSquareLoop(shapeVertices[currentIndex], sz, z / 2, false, 3);
+
+
+      currentIndex++;
+      shapeModes.length = currentIndex + 1;
+      shapeVertices.length = currentIndex + 1;
+      shapeColors.length = currentIndex + 1;
+
+      shapeModes[currentIndex] = GL_TRIANGLE_FAN;
+
+      shapeColors[currentIndex][0] = r * 0.25f * Screen.brightness;
+      shapeColors[currentIndex][1] = g * 0.25f * Screen.brightness;
+      shapeColors[currentIndex][2] = b * 0.25f * Screen.brightness;
+      shapeColors[currentIndex][3] = 1;
+
       if (type == ShapeType.BRIDGE)
-        createSquareLoop(sz, z, true);
+        createSquareLoop(shapeVertices[currentIndex], sz, z, true);
       else
-        createSquareLoop(sz, z / 2, true, 3);
-      glEnd();
+        createSquareLoop(shapeVertices[currentIndex], sz, z / 2, true, 3);
+
       break;
     case ShapeType.TURRET_DESTROYED:
       break;
@@ -156,7 +235,23 @@ public class BaseShape: DrawableShape {
     }
   }
 
-  private void createLoop(float s, float z, bool backToFirst = false, bool record = false) {
+  protected override void drawShape() {
+    glEnableClientState(GL_VERTEX_ARRAY);
+
+    foreach(i; 0..shapeModes.length) {
+      if (shapeColors[i][0] != -1) {
+        glColor4f(shapeColors[i][0], shapeColors[i][1], shapeColors[i][2], shapeColors[i][3]);
+      }
+
+      glVertexPointer(3, GL_FLOAT, 0, cast(void *)(shapeVertices[i].ptr));
+
+      glDrawArrays(shapeModes[i], 0, cast(int)(shapeVertices[i].length / 3));
+    }
+
+    glDisableClientState(GL_VERTEX_ARRAY);
+  }
+
+  private void createLoop(ref GLfloat[] partVertices, float s, float z, bool backToFirst = false, bool record = false) {
     float d = 0;
     int pn;
     bool firstPoint = true;
@@ -186,7 +281,7 @@ public class BaseShape: DrawableShape {
       sy *= size * s;
       float px = cx * (1 - spinyRatio) + sx * spinyRatio;
       float py = cy * (1 - spinyRatio) + sy * spinyRatio;
-      glVertex3f(px, py, z);
+      partVertices ~= [px, py, z];
       if (backToFirst && firstPoint) {
         fpx = px;
         fpy = py;
@@ -201,10 +296,10 @@ public class BaseShape: DrawableShape {
       }
     }
     if (backToFirst)
-      glVertex3f(fpx, fpy, z);
+      partVertices ~= [fpx, fpy, z];
   }
 
-  private void createSquareLoop(float s, float z, bool backToFirst = false, float yRatio = 1) {
+  private void createSquareLoop(ref GLfloat[] partVertices, float s, float z, bool backToFirst = false, float yRatio = 1) {
     float d;
     int pn;
     if (backToFirst)
@@ -217,15 +312,16 @@ public class BaseShape: DrawableShape {
       float py = cos(d) * size * s;
       if (py > 0)
         py *= yRatio;
-      glVertex3f(px, py, z);
+
+      partVertices ~= [px, py, z];
     }
   }
 
-  private void createPillar(Vector p, float s, float z) {
+  private void createPillar(ref GLfloat[] partVertices, Vector p, float s, float z) {
     float d;
     for (int i = 0; i < PILLAR_POINT_NUM; i++) {
       d = PI * 2 * i / PILLAR_POINT_NUM;
-      glVertex3f(sin(d) * s + p.x, cos(d) * s + p.y, z);
+      partVertices ~= [sin(d) * s + p.x, cos(d) * s + p.y, z];
     }
   }
 
@@ -401,109 +497,152 @@ public class BulletShape: ResizableDrawable {
 }
 
 public class NormalBulletShape: DrawableShape {
-  public override void createDisplayList() {
+ private:
+  static const GLfloat[3*(3+3+6)] shapeVertices = [
+     0.2f, -0.25f,  0.2f,
+     0   ,  0.33f,  0   ,
+    -0.2f, -0.25f, -0.2f,
+
+    -0.2f, -0.25f,  0.2f,
+     0   ,  0.33f,  0   ,
+     0.2f, -0.25f, -0.2f,
+
+     0   ,  0.33f,  0   ,
+     0.2f, -0.25f,  0.2f,
+    -0.2f, -0.25f,  0.2f,
+    -0.2f, -0.25f, -0.2f,
+     0.2f, -0.25f, -0.2f,
+     0.2f, -0.25f,  0.2f
+  ];
+
+  public override void prepareShape() {
+  }
+
+  protected override void drawShape() {
+    glEnableClientState(GL_VERTEX_ARRAY);
+    glVertexPointer(3, GL_FLOAT, 0, cast(void *)(shapeVertices.ptr));
+
     glDisable(GL_BLEND);
     Screen.setColor(1, 1, 0.3f);
-    glBegin(GL_LINE_STRIP);
-    glVertex3f(0.2f, -0.25f, 0.2f);
-    glVertex3f(0, 0.33f, 0);
-    glVertex3f(-0.2f, -0.25f, -0.2f);
-    glEnd();
-    glBegin(GL_LINE_STRIP);
-    glVertex3f(-0.2f, -0.25f, 0.2f);
-    glVertex3f(0, 0.33f, 0);
-    glVertex3f(0.2f, -0.25f, -0.2f);
-    glEnd();
+    glDrawArrays(GL_LINE_STRIP, 0, 3);
+    glDrawArrays(GL_LINE_STRIP, 3, 3);
     glEnable(GL_BLEND);
+
     Screen.setColor(0.5f, 0.2f, 0.1f);
-    glBegin(GL_TRIANGLE_FAN);
-    glVertex3f(0, 0.33f, 0);
-    glVertex3f(0.2f, -0.25f, 0.2f);
-    glVertex3f(-0.2f, -0.25f, 0.2f);
-    glVertex3f(-0.2f, -0.25f, -0.2f);
-    glVertex3f(0.2f, -0.25f, -0.2f);
-    glVertex3f(0.2f, -0.25f, 0.2f);
-    glEnd();
+    glDrawArrays(GL_TRIANGLE_FAN, 6, 6);
+
+    glDisableClientState(GL_VERTEX_ARRAY);
   }
 }
 
 public class SmallBulletShape: DrawableShape {
-  public override void createDisplayList() {
+ private:
+  static const GLfloat[3*(3+3+6)] shapeVertices = [
+     0.25f, -0.25f,  0.25f,
+     0    ,  0.33f,  0    ,
+    -0.25f, -0.25f, -0.25f,
+
+    -0.25f, -0.25f,  0.25f,
+     0    ,  0.33f,  0    ,
+     0.25f, -0.25f, -0.25f,
+
+     0    ,  0.33f,  0    ,
+     0.25f, -0.25f,  0.25f,
+    -0.25f, -0.25f,  0.25f,
+    -0.25f, -0.25f, -0.25f,
+     0.25f, -0.25f, -0.25f,
+     0.25f, -0.25f,  0.25f
+  ];
+
+  public override void prepareShape() {
+  }
+
+  protected override void drawShape() {
+    glEnableClientState(GL_VERTEX_ARRAY);
+    glVertexPointer(3, GL_FLOAT, 0, cast(void *)(shapeVertices.ptr));
+
     glDisable(GL_BLEND);
     Screen.setColor(0.6f, 0.9f, 0.3f);
-    glBegin(GL_LINE_STRIP);
-    glVertex3f(0.25f, -0.25f, 0.25f);
-    glVertex3f(0, 0.33f, 0);
-    glVertex3f(-0.25f, -0.25f, -0.25f);
-    glEnd();
-    glBegin(GL_LINE_STRIP);
-    glVertex3f(-0.25f, -0.25f, 0.25f);
-    glVertex3f(0, 0.33f, 0);
-    glVertex3f(0.25f, -0.25f, -0.25f);
-    glEnd();
+    glDrawArrays(GL_LINE_STRIP, 0, 3);
+    glDrawArrays(GL_LINE_STRIP, 3, 3);
     glEnable(GL_BLEND);
+
     Screen.setColor(0.2f, 0.4f, 0.1f);
-    glBegin(GL_TRIANGLE_FAN);
-    glVertex3f(0, 0.33f, 0);
-    glVertex3f(0.25f, -0.25f, 0.25f);
-    glVertex3f(-0.25f, -0.25f, 0.25f);
-    glVertex3f(-0.25f, -0.25f, -0.25f);
-    glVertex3f(0.25f, -0.25f, -0.25f);
-    glVertex3f(0.25f, -0.25f, 0.25f);
-    glEnd();
+    glDrawArrays(GL_TRIANGLE_FAN, 6, 6);
+
+    glDisableClientState(GL_VERTEX_ARRAY);
   }
 }
 
 public class MovingTurretBulletShape: DrawableShape {
-  public override void createDisplayList() {
+ private:
+  static const GLfloat[3*(3+3+6)] shapeVertices = [
+     0.25f, -0.25f,  0.25f,
+     0    ,  0.33f,  0    ,
+    -0.25f, -0.25f, -0.25f,
+
+    -0.25f, -0.25f,  0.25f,
+     0    ,  0.33f,  0    ,
+     0.25f, -0.25f, -0.25f,
+
+     0    ,  0.33f,  0    ,
+     0.25f, -0.25f,  0.25f,
+    -0.25f, -0.25f,  0.25f,
+    -0.25f, -0.25f, -0.25f,
+     0.25f, -0.25f, -0.25f,
+     0.25f, -0.25f,  0.25f
+  ];
+
+  public override void prepareShape() {
+  }
+
+  protected override void drawShape() {
+    glEnableClientState(GL_VERTEX_ARRAY);
+    glVertexPointer(3, GL_FLOAT, 0, cast(void *)(shapeVertices.ptr));
+
     glDisable(GL_BLEND);
     Screen.setColor(0.7f, 0.5f, 0.9f);
-    glBegin(GL_LINE_STRIP);
-    glVertex3f(0.25f, -0.25f, 0.25f);
-    glVertex3f(0, 0.33f, 0);
-    glVertex3f(-0.25f, -0.25f, -0.25f);
-    glEnd();
-    glBegin(GL_LINE_STRIP);
-    glVertex3f(-0.25f, -0.25f, 0.25f);
-    glVertex3f(0, 0.33f, 0);
-    glVertex3f(0.25f, -0.25f, -0.25f);
-    glEnd();
+    glDrawArrays(GL_LINE_STRIP, 0, 3);
+    glDrawArrays(GL_LINE_STRIP, 3, 3);
     glEnable(GL_BLEND);
+
     Screen.setColor(0.2f, 0.2f, 0.3f);
-    glBegin(GL_TRIANGLE_FAN);
-    glVertex3f(0, 0.33f, 0);
-    glVertex3f(0.25f, -0.25f, 0.25f);
-    glVertex3f(-0.25f, -0.25f, 0.25f);
-    glVertex3f(-0.25f, -0.25f, -0.25f);
-    glVertex3f(0.25f, -0.25f, -0.25f);
-    glVertex3f(0.25f, -0.25f, 0.25f);
-    glEnd();
+    glDrawArrays(GL_TRIANGLE_FAN, 6, 6);
+
+    glDisableClientState(GL_VERTEX_ARRAY);
   }
 }
 
 public class DestructiveBulletShape: DrawableShape, Collidable {
   mixin CollidableImpl;
  private:
+  static const GLfloat[3*4] shapeVertices = [
+     0.2f,  0   , 0,
+     0   ,  0.4f, 0,
+    -0.2f,  0   , 0,
+     0   , -0.4f, 0
+  ];
   Vector _collision;
 
-  public override void createDisplayList() {
+  public override void prepareShape() {
+    _collision = new Vector(0.4f, 0.4f);
+  }
+
+  protected override void drawShape() {
+    Screen.setColor(0.1f, 0.33f, 0.1f);
+
+    glEnableClientState(GL_VERTEX_ARRAY);
+    glVertexPointer(3, GL_FLOAT, 0, cast(void *)(shapeVertices.ptr));
+
     glDisable(GL_BLEND);
     Screen.setColor(0.9f, 0.9f, 0.6f);
-    glBegin(GL_LINE_LOOP);
-    glVertex3f(0.2f, 0, 0);
-    glVertex3f(0, 0.4f, 0);
-    glVertex3f(-0.2f, 0, 0);
-    glVertex3f(0, -0.4f, 0);
-    glEnd();
+    glDrawArrays(GL_LINE_LOOP, 0, 4);
     glEnable(GL_BLEND);
+
     Screen.setColor(0.7f, 0.5f, 0.4f);
-    glBegin(GL_TRIANGLE_FAN);
-    glVertex3f(0.2f, 0, 0);
-    glVertex3f(0, 0.4f, 0);
-    glVertex3f(-0.2f, 0, 0);
-    glVertex3f(0, -0.4f, 0);
-    glEnd();
-    _collision = new Vector(0.4f, 0.4f);
+    glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+
+    glDisableClientState(GL_VERTEX_ARRAY);
   }
 
   public Vector collision() {
@@ -512,36 +651,76 @@ public class DestructiveBulletShape: DrawableShape, Collidable {
 }
 
 public class CrystalShape: DrawableShape {
-  public override void createDisplayList() {
+ private:
+  static const GLfloat[3*4] shapeVertices = [
+    -0.2f,  0.2f, 0,
+     0.2f,  0.2f, 0,
+     0.2f, -0.2f, 0,
+    -0.2f, -0.2f, 0
+  ];
+
+  public override void prepareShape() {
+  }
+
+  protected override void drawShape() {
     Screen.setColor(0.6f, 1, 0.7f);
-    glBegin(GL_LINE_LOOP);
-    glVertex3f(-0.2f, 0.2f, 0);
-    glVertex3f(0.2f, 0.2f, 0);
-    glVertex3f(0.2f, -0.2f, 0);
-    glVertex3f(-0.2f, -0.2f, 0);
-    glEnd();
+
+    glEnableClientState(GL_VERTEX_ARRAY);
+    glVertexPointer(3, GL_FLOAT, 0, cast(void *)(shapeVertices.ptr));
+
+    glDrawArrays(GL_LINE_LOOP, 0, 4);
+
+    glDisableClientState(GL_VERTEX_ARRAY);
   }
 }
 
 public class ShieldShape: DrawableShape {
-  public override void createDisplayList() {
-    Screen.setColor(0.5f, 0.5f, 0.7f);
-    glBegin(GL_LINE_LOOP);
+ private:
+  static GLfloat[3*10] shapeVertices;
+  static GLfloat[4*10] shapeColors;
+
+  public static this() {
+    shapeVertices[0] = 0;
+    shapeVertices[1] = 0;
+    shapeVertices[2] = 0;
+
+    shapeColors[0] = 0;
+    shapeColors[1] = 0;
+    shapeColors[2] = 0;
+    shapeColors[3] = 1;
+
     float d = 0;
-    for (int i = 0; i < 8; i++) {
-      glVertex3f(sin(d), cos(d), 0);
-      d += PI / 4;
-    }
-    glEnd();
-    glBegin(GL_TRIANGLE_FAN);
-    Screen.setColor(0, 0, 0);
-    glVertex3f(0, 0, 0);
-    d = 0;
-    Screen.setColor(0.3f, 0.3f, 0.5f);
     for (int i = 0; i < 9; i++) {
-      glVertex3f(sin(d), cos(d), 0);
+      shapeVertices[3*(i+1) + 0] = sin(d);
+      shapeVertices[3*(i+1) + 1] = cos(d);
+      shapeVertices[3*(i+1) + 2] = 0;
+
+      shapeColors[4*(i+1) + 0] = 0.3f * Screen.brightness;
+      shapeColors[4*(i+1) + 1] = 0.3f * Screen.brightness;
+      shapeColors[4*(i+1) + 2] = 0.5f * Screen.brightness;
+      shapeColors[4*(i+1) + 3] = 1;
+
       d += PI / 4;
     }
-    glEnd();
+  }
+
+  public override void prepareShape() {
+  }
+
+  protected override void drawShape() {
+    Screen.setColor(0.5f, 0.5f, 0.7f);
+
+    glEnableClientState(GL_VERTEX_ARRAY);
+    glVertexPointer(3, GL_FLOAT, 0, cast(void *)(shapeVertices.ptr));
+
+    glDrawArrays(GL_LINE_LOOP, 1, 8);
+
+    glEnableClientState(GL_COLOR_ARRAY);
+    glColorPointer(4, GL_FLOAT, 0, cast(void *)(shapeColors.ptr));
+
+    glDrawArrays(GL_TRIANGLE_FAN, 0, 10);
+
+    glDisableClientState(GL_COLOR_ARRAY);
+    glDisableClientState(GL_VERTEX_ARRAY);
   }
 }

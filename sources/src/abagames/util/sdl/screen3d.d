@@ -8,7 +8,14 @@ module abagames.util.sdl.screen3d;
 private import std.string;
 private import std.conv;
 private import SDL;
-private import opengl;
+version (USE_GLES) {
+  private import opengles;
+  private import opengles_fbo;
+  private import eglport;
+  alias glFrustumf glFrustum;
+} else {
+  private import opengl;
+}
 private import abagames.util.vector;
 private import abagames.util.sdl.screen;
 private import abagames.util.sdl.sdlexception;
@@ -36,14 +43,30 @@ public class Screen3D: Screen, SizableScreen {
     }
     // Create an OpenGL screen.
     Uint32 videoFlags;
-    if (_windowMode) {
-      videoFlags = SDL_OPENGL | SDL_RESIZABLE;
+    version (USE_GLES) {
+      videoFlags = SDL_SWSURFACE;
     } else {
-      videoFlags = SDL_OPENGL | SDL_FULLSCREEN;
+      videoFlags = SDL_OPENGL;
+    }
+    if (_windowMode) {
+      videoFlags |= SDL_RESIZABLE;
+    } else {
+      videoFlags |= SDL_FULLSCREEN;
     }
     if (SDL_SetVideoMode(_width, _height, 0, videoFlags) == null) {
       throw new SDLInitFailedException
         ("Unable to create SDL screen: " ~ to!string(SDL_GetError()));
+    }
+    version (USE_GLES) {
+      if (EGL_Open(cast(ushort)physical_width, cast(ushort)physical_height) != 0) {
+        throw new SDLInitFailedException(
+          "Unable to open EGL context");
+      }
+
+      if (!loadFBOExtension()) {
+        throw new SDLInitFailedException(
+          "FBOs not supported");
+      }
     }
     glViewport(0, 0, _width, _height);
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
@@ -74,12 +97,19 @@ public class Screen3D: Screen, SizableScreen {
 
   public void closeSDL() {
     close();
+    version (USE_GLES) {
+      EGL_Close();
+    }
     SDL_ShowCursor(SDL_ENABLE);
   }
 
   public void flip() {
     handleError();
-    SDL_GL_SwapBuffers();
+    version (USE_GLES) {
+      EGL_SwapBuffers();
+    } else {
+      SDL_GL_SwapBuffers();
+    }
   }
 
   public void clear() {
@@ -122,14 +152,6 @@ public class Screen3D: Screen, SizableScreen {
     return _height;
   }
 
-  public static void glVertex(Vector v) {
-    glVertex3f(v.x, v.y, 0);
-  }
-
-  public static void glVertex(Vector3 v) {
-    glVertex3f(v.x, v.y, v.z);
-  }
-
   public static void glTranslate(Vector v) {
     glTranslatef(v.x, v.y, 0);
   }
@@ -144,6 +166,10 @@ public class Screen3D: Screen, SizableScreen {
 
   public static void setClearColor(float r, float g, float b, float a = 1) {
     glClearColor(r * _brightness, g * _brightness, b * _brightness, a);
+  }
+
+  public static float brightness() {
+    return _brightness;
   }
 
   public static float brightness(float v) {

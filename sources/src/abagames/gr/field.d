@@ -5,12 +5,15 @@
  */
 module abagames.gr.field;
 
-private import opengl;
+version (USE_GLES) {
+  private import opengles;
+} else {
+  private import opengl;
+}
 private import std.math;
 private import abagames.util.vector;
 private import abagames.util.rand;
 private import abagames.util.math;
-private import abagames.util.sdl.displaylist;
 private import abagames.gr.screen;
 private import abagames.gr.stagemanager;
 private import abagames.gr.ship;
@@ -350,22 +353,35 @@ public class Field {
   public void drawSideWalls() {
     glDisable(GL_BLEND);
     Screen.setColor(0, 0, 0, 1);
-    glBegin(GL_TRIANGLE_FAN);
-    glVertex3f(SIDEWALL_X1, SIDEWALL_Y, 0);
-    glVertex3f(SIDEWALL_X2, SIDEWALL_Y, 0);
-    glVertex3f(SIDEWALL_X2, -SIDEWALL_Y, 0);
-    glVertex3f(SIDEWALL_X1, -SIDEWALL_Y, 0);
-    glEnd();
-    glBegin(GL_TRIANGLE_FAN);
-    glVertex3f(-SIDEWALL_X1, SIDEWALL_Y, 0);
-    glVertex3f(-SIDEWALL_X2, SIDEWALL_Y, 0);
-    glVertex3f(-SIDEWALL_X2, -SIDEWALL_Y, 0);
-    glVertex3f(-SIDEWALL_X1, -SIDEWALL_Y, 0);
-    glEnd();
+    {
+      static const GLfloat[3*(4+4)] sideWallsVertices = [
+        SIDEWALL_X1, SIDEWALL_Y, 0,
+        SIDEWALL_X2, SIDEWALL_Y, 0,
+        SIDEWALL_X2, -SIDEWALL_Y, 0,
+        SIDEWALL_X1, -SIDEWALL_Y, 0,
+
+        -SIDEWALL_X1, SIDEWALL_Y, 0,
+        -SIDEWALL_X2, SIDEWALL_Y, 0,
+        -SIDEWALL_X2, -SIDEWALL_Y, 0,
+        -SIDEWALL_X1, -SIDEWALL_Y, 0
+      ];
+
+      glEnableClientState(GL_VERTEX_ARRAY);
+
+      glVertexPointer(3, GL_FLOAT, 0, cast(void *)(sideWallsVertices.ptr));
+
+      glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+      glDrawArrays(GL_TRIANGLE_FAN, 4, 4);
+
+      glDisableClientState(GL_VERTEX_ARRAY);
+    }
     glEnable(GL_BLEND);
   }
 
   private void drawPanel() {
+    static const int quadNumVertices = 4;
+    GLfloat[3*quadNumVertices] quadVertices;
+
     int ci = cast(int) time;
     int nci = ci + 1;
     if (nci >= TIME_COLOR_INDEX)
@@ -382,7 +398,9 @@ public class Field {
     if (by < 0)
       by += BLOCK_SIZE_Y;
     sy += BLOCK_WIDTH;
-    glBegin(GL_QUADS);
+
+    glEnableClientState(GL_VERTEX_ARRAY);
+    glVertexPointer(3, GL_FLOAT, 0, cast(void *)(quadVertices.ptr));
     for (int y = -1; y < SCREEN_BLOCK_SIZE_Y + NEXT_BLOCK_AREA_SIZE; y++) {
       if (by >= BLOCK_SIZE_Y)
         by -= BLOCK_SIZE_Y;
@@ -392,23 +410,47 @@ public class Field {
         Screen.setColor(baseColor[p.ci][0] * p.or * 0.66f,
                         baseColor[p.ci][1] * p.og * 0.66f,
                         baseColor[p.ci][2] * p.ob * 0.66f);
-        glVertex3f(sx + p.x, sy - p.y, p.z);
-        glVertex3f(sx + p.x + PANEL_WIDTH, sy - p.y, p.z);
-        glVertex3f(sx + p.x + PANEL_WIDTH, sy - p.y - PANEL_WIDTH, p.z);
-        glVertex3f(sx + p.x, sy - p.y - PANEL_WIDTH, p.z);
+
+        quadVertices[3*0+0] = sx + p.x;
+        quadVertices[3*0+1] = sy - p.y;
+        quadVertices[3*0+2] = p.z;
+        quadVertices[3*1+0] = sx + p.x + PANEL_WIDTH;
+        quadVertices[3*1+1] = sy - p.y;
+        quadVertices[3*1+2] = p.z;
+        quadVertices[3*2+0] = sx + p.x + PANEL_WIDTH;
+        quadVertices[3*2+1] = sy - p.y - PANEL_WIDTH;
+        quadVertices[3*2+2] = p.z;
+        quadVertices[3*3+0] = sx + p.x;
+        quadVertices[3*3+1] = sy - p.y - PANEL_WIDTH;
+        quadVertices[3*3+2] = p.z;
+
+        glDrawArrays(GL_TRIANGLE_FAN, 0, quadNumVertices);
+
         Screen.setColor(baseColor[p.ci][0] * 0.33f,
                         baseColor[p.ci][1] * 0.33f,
                         baseColor[p.ci][2] * 0.33f);
-        glVertex2f(sx, sy);
-        glVertex2f(sx + BLOCK_WIDTH, sy);
-        glVertex2f(sx + BLOCK_WIDTH, sy - BLOCK_WIDTH);
-        glVertex2f(sx, sy - BLOCK_WIDTH);
+
+        quadVertices[3*0+0] = sx;
+        quadVertices[3*0+1] = sy;
+        quadVertices[3*0+2] = 0;
+        quadVertices[3*1+0] = sx + BLOCK_WIDTH;
+        quadVertices[3*1+1] = sy;
+        quadVertices[3*1+2] = 0;
+        quadVertices[3*2+0] = sx + BLOCK_WIDTH;
+        quadVertices[3*2+1] = sy - BLOCK_WIDTH;
+        quadVertices[3*2+2] = 0;
+        quadVertices[3*3+0] = sx;
+        quadVertices[3*3+1] = sy - BLOCK_WIDTH;
+        quadVertices[3*3+2] = 0;
+
+        glDrawArrays(GL_TRIANGLE_FAN, 0, quadNumVertices);
+
         sx += BLOCK_WIDTH;
       }
       sy -= BLOCK_WIDTH;
       by++;
     }
-    glEnd();
+    glDisableClientState(GL_VERTEX_ARRAY);
   }
 
   private static int[2][4] degBlockOfs = [[0, -1], [1, 0], [0, 1], [-1, 0]];

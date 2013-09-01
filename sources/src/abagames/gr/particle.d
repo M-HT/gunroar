@@ -6,14 +6,18 @@
 module abagames.gr.particle;
 
 private import std.math;
-private import opengl;
+version (USE_GLES) {
+  private import opengles;
+} else {
+  private import opengl;
+}
 private import abagames.util.actor;
 private import abagames.util.vector;
 private import abagames.util.rand;
 private import abagames.util.sdl.luminous;
-private import abagames.util.sdl.displaylist;
 private import abagames.gr.field;
 private import abagames.gr.screen;
+private import abagames.gr.drawdata;
 
 /**
  * Sparks.
@@ -21,6 +25,7 @@ private import abagames.gr.screen;
 public class Spark: LuminousActor {
  private:
   static Rand rand;
+  DrawData drawData;
   Vector pos, ppos;
   Vector vel;
   float r, g, b;
@@ -56,6 +61,7 @@ public class Spark: LuminousActor {
   }
 
   public override void init(Object[] args) {
+    drawData = cast(DrawData) args[0];
   }
 
   public void set(Vector p, float vx, float vy, float r, float g, float b, int c) {
@@ -83,31 +89,49 @@ public class Spark: LuminousActor {
   }
 
   public override void draw() {
+    const float brightness = Screen.brightness;
+    drawData.colors ~= [
+      r        * brightness, g        * brightness, b        * brightness, 1,
+      r * 0.5f * brightness, g * 0.5f * brightness, b * 0.5f * brightness, 0,
+      r * 0.5f * brightness, g * 0.5f * brightness, b * 0.5f * brightness, 0
+    ];
+
     float ox = vel.x;
     float oy = vel.y;
-    Screen.setColor(r, g, b, 1);
+
     ox *= 2;
     oy *= 2;
-    glVertex3f(pos.x - ox, pos.y - oy, 0);
+    drawData.vertices ~= [pos.x - ox, pos.y - oy, 0];
     ox *= 0.5f;
     oy *= 0.5f;
-    Screen.setColor(r * 0.5f, g * 0.5f, b * 0.5f, 0);
-    glVertex3f(pos.x - oy, pos.y + ox, 0);
-    glVertex3f(pos.x + oy, pos.y - ox, 0);
+
+    drawData.vertices ~= [
+      pos.x - oy, pos.y + ox, 0,
+      pos.x + oy, pos.y - ox, 0
+    ];
   }
 
   public override void drawLuminous() {
+    const float brightness = Screen.brightness;
+    drawData.colors ~= [
+      r        * brightness, g        * brightness, b        * brightness, 1,
+      r * 0.5f * brightness, g * 0.5f * brightness, b * 0.5f * brightness, 0,
+      r * 0.5f * brightness, g * 0.5f * brightness, b * 0.5f * brightness, 0
+    ];
+
     float ox = vel.x;
     float oy = vel.y;
-    Screen.setColor(r, g, b, 1);
+
     ox *= 2;
     oy *= 2;
-    glVertex3f(pos.x - ox, pos.y - oy, 0);
+    drawData.vertices ~= [pos.x - ox, pos.y - oy, 0];
     ox *= 0.5f;
     oy *= 0.5f;
-    Screen.setColor(r * 0.5f, g * 0.5f, b * 0.5f, 0);
-    glVertex3f(pos.x - oy, pos.y + ox, 0);
-    glVertex3f(pos.x + oy, pos.y - ox, 0);
+
+    drawData.vertices ~= [
+      pos.x - oy, pos.y + ox, 0,
+      pos.x + oy, pos.y - ox, 0
+    ];
   }
 }
 
@@ -129,6 +153,7 @@ public class Smoke: LuminousActor {
   static Rand rand;
   static Vector3 windVel;
   static Vector wakePos;
+  DrawData drawData;
   Field field;
   WakePool wakes;
   Vector3 pos;
@@ -180,8 +205,9 @@ public class Smoke: LuminousActor {
   }
 
   public override void init(Object[] args) {
-    field = cast(Field) args[0];
-    wakes = cast(WakePool) args[1];
+    drawData = cast(DrawData) args[0];
+    field = cast(Field) args[1];
+    wakes = cast(WakePool) args[2];
   }
 
   public void set(Vector p, float mx, float my, float mz, int t, int c = 60, float sz = 2) {
@@ -334,22 +360,40 @@ public class Smoke: LuminousActor {
   }
 
   public override void draw() {
+    const float brightness = Screen.brightness;
+    drawData.colors ~= [
+      r * brightness, g * brightness, b * brightness, a,
+      r * brightness, g * brightness, b * brightness, a,
+      r * brightness, g * brightness, b * brightness, a,
+      r * brightness, g * brightness, b * brightness, a
+    ];
+
     float quadSize = size / 2;
-    Screen.setColor(r, g, b, a);
-    glVertex3f(pos.x - quadSize, pos.y - quadSize, pos.z);
-    glVertex3f(pos.x + quadSize, pos.y - quadSize, pos.z);
-    glVertex3f(pos.x + quadSize, pos.y + quadSize, pos.z);
-    glVertex3f(pos.x - quadSize, pos.y + quadSize, pos.z);
+    drawData.vertices ~= [
+      pos.x - quadSize, pos.y - quadSize, pos.z,
+      pos.x + quadSize, pos.y - quadSize, pos.z,
+      pos.x + quadSize, pos.y + quadSize, pos.z,
+      pos.x - quadSize, pos.y + quadSize, pos.z
+    ];
   }
 
   public override void drawLuminous() {
     if (r + g > 0.8f && b < 0.5f) {
+      const float brightness = Screen.brightness;
+      drawData.colors ~= [
+        r * brightness, g * brightness, b * brightness, a,
+        r * brightness, g * brightness, b * brightness, a,
+        r * brightness, g * brightness, b * brightness, a,
+        r * brightness, g * brightness, b * brightness, a
+      ];
+
       float quadSize = size / 2;
-      Screen.setColor(r, g, b, a);
-      glVertex3f(pos.x - quadSize, pos.y - quadSize, pos.z);
-      glVertex3f(pos.x + quadSize, pos.y - quadSize, pos.z);
-      glVertex3f(pos.x + quadSize, pos.y + quadSize, pos.z);
-      glVertex3f(pos.x - quadSize, pos.y + quadSize, pos.z);
+      drawData.vertices ~= [
+        pos.x - quadSize, pos.y - quadSize, pos.z,
+        pos.x + quadSize, pos.y - quadSize, pos.z,
+        pos.x + quadSize, pos.y + quadSize, pos.z,
+        pos.x - quadSize, pos.y + quadSize, pos.z,
+      ];
     }
   }
 }
@@ -365,7 +409,6 @@ public class SmokePool: LuminousActorPool!(Smoke) {
  */
 public class Fragment: Actor {
  private:
-  static DisplayList displayList;
   static Rand rand;
   Field field;
   SmokePool smokes;
@@ -373,6 +416,13 @@ public class Fragment: Actor {
   Vector3 vel;
   float size;
   float d2, md2;
+  static const int fragmentNumVertices = 4;
+  static const GLfloat[2*fragmentNumVertices] fragmentVertices = [
+    -0.5f, -0.25f,
+    0.5f, -0.25f,
+    0.5f, 0.25f,
+    -0.5f, 0.25f
+  ];
 
   invariant() {
     assert(pos.x < 15 && pos.x > -15);
@@ -388,23 +438,6 @@ public class Fragment: Actor {
 
   public static void init() {
     rand = new Rand;
-    displayList = new DisplayList(1);
-    displayList.beginNewList();
-    Screen.setColor(0.7f, 0.5f, 0.5f, 0.5f);
-    glBegin(GL_TRIANGLE_FAN);
-    glVertex2f(-0.5f, -0.25f);
-    glVertex2f(0.5f, -0.25f);
-    glVertex2f(0.5f, 0.25f);
-    glVertex2f(-0.5f, 0.25f);
-    glEnd();
-    Screen.setColor(0.7f, 0.5f, 0.5f, 0.9f);
-    glBegin(GL_LINE_LOOP);
-    glVertex2f(-0.5f, -0.25f);
-    glVertex2f(0.5f, -0.25f);
-    glVertex2f(0.5f, 0.25f);
-    glVertex2f(-0.5f, 0.25f);
-    glEnd();
-    displayList.endNewList();
   }
 
   public static void setRandSeed(long seed) {
@@ -412,7 +445,6 @@ public class Fragment: Actor {
   }
 
   public static void close() {
-    displayList.close();
   }
 
   public this() {
@@ -466,12 +498,26 @@ public class Fragment: Actor {
     d2 += md2;
   }
 
+  private static drawFragment() {
+    glEnableClientState(GL_VERTEX_ARRAY);
+
+    glVertexPointer(2, GL_FLOAT, 0, cast(void *)(fragmentVertices.ptr));
+
+    Screen.setColor(0.7f, 0.5f, 0.5f, 0.5f);
+    glDrawArrays(GL_TRIANGLE_FAN, 0, fragmentNumVertices);
+
+    Screen.setColor(0.7f, 0.5f, 0.5f, 0.9f);
+    glDrawArrays(GL_LINE_LOOP, 0, fragmentNumVertices);
+
+    glDisableClientState(GL_VERTEX_ARRAY);
+  }
+
   public override void draw() {
     glPushMatrix();
     Screen.glTranslate(pos);
     glRotatef(d2, 1, 0, 0);
     glScalef(size, size, 1);
-    displayList.call(0);
+    drawFragment();
     glPopMatrix();
   }
 }
@@ -487,7 +533,6 @@ public class FragmentPool: ActorPool!(Fragment) {
  */
 public class SparkFragment: LuminousActor {
  private:
-  static DisplayList displayList;
   static Rand rand;
   Field field;
   SmokePool smokes;
@@ -497,6 +542,13 @@ public class SparkFragment: LuminousActor {
   float d2, md2;
   int cnt;
   bool hasSmoke;
+  static const int fragmentNumVertices = 4;
+  static const GLfloat[2*fragmentNumVertices] fragmentVertices = [
+    -0.25f, -0.25f,
+    0.25f, -0.25f,
+    0.25f, 0.25f,
+    -0.25f, 0.25f
+  ];
 
   invariant() {
     assert(pos.x < 15 && pos.x > -15);
@@ -513,15 +565,6 @@ public class SparkFragment: LuminousActor {
 
   public static void init() {
     rand = new Rand;
-    displayList = new DisplayList(1);
-    displayList.beginNewList();
-    glBegin(GL_TRIANGLE_FAN);
-    glVertex2f(-0.25f, -0.25f);
-    glVertex2f(0.25f, -0.25f);
-    glVertex2f(0.25f, 0.25f);
-    glVertex2f(-0.25f, 0.25f);
-    glEnd();
-    displayList.endNewList();
   }
 
   public static void setRandSeed(long seed) {
@@ -529,7 +572,6 @@ public class SparkFragment: LuminousActor {
   }
 
   public static void close() {
-    displayList.close();
   }
 
   public this() {
@@ -595,13 +637,22 @@ public class SparkFragment: LuminousActor {
     }
   }
 
+  private static drawFragment() {
+    glEnableClientState(GL_VERTEX_ARRAY);
+
+    glVertexPointer(2, GL_FLOAT, 0, cast(void *)(fragmentVertices.ptr));
+    glDrawArrays(GL_TRIANGLE_FAN, 0, fragmentNumVertices);
+
+    glDisableClientState(GL_VERTEX_ARRAY);
+  }
+
   public override void draw() {
     glPushMatrix();
     Screen.setColor(1, rand.nextFloat(1), 0, 0.8f);
     Screen.glTranslate(pos);
     glRotatef(d2, 1, 0, 0);
     glScalef(size, size, 1);
-    displayList.call(0);
+    drawFragment();
     glPopMatrix();
   }
 
@@ -611,7 +662,7 @@ public class SparkFragment: LuminousActor {
     Screen.glTranslate(pos);
     glRotatef(d2, 1, 0, 0);
     glScalef(size, size, 1);
-    displayList.call(0);
+    drawFragment();
     glPopMatrix();
   }
 }
@@ -627,6 +678,7 @@ public class SparkFragmentPool: LuminousActorPool!(SparkFragment) {
  */
 public class Wake: Actor {
  private:
+  DrawData drawData;
   Field field;
   Vector pos;
   Vector vel;
@@ -657,7 +709,8 @@ public class Wake: Actor {
   }
 
   public override void init(Object[] args) {
-    field = cast(Field) args[0];
+    drawData = cast(DrawData) args[0];
+    field = cast(Field) args[1];
   }
 
   public void set(Vector p, float deg, float speed, int c = 60, float sz = 1, bool rs = false) {
@@ -688,20 +741,29 @@ public class Wake: Actor {
   }
 
   public override void draw() {
+    const float brightness = Screen.brightness;
+    drawData.colors ~= [
+      0.33f * brightness, 0.33f * brightness, 1    * brightness, 1,
+      0.2f  * brightness, 0.2f  * brightness, 0.6f * brightness, 0.5f,
+      0.2f  * brightness, 0.2f  * brightness, 0.6f * brightness, 0.5f
+    ];
+
     float ox = vel.x;
     float oy = vel.y;
-    Screen.setColor(0.33f, 0.33f, 1);
+
     ox *= size;
     oy *= size;
     if (revShape)
-      glVertex3f(pos.x + ox, pos.y + oy, 0);
+      drawData.vertices ~= [pos.x + ox, pos.y + oy, 0];
     else
-      glVertex3f(pos.x - ox, pos.y - oy, 0);
+      drawData.vertices ~= [pos.x - ox, pos.y - oy, 0];
     ox *= 0.2f;
     oy *= 0.2f;
-    Screen.setColor(0.2f, 0.2f, 0.6f, 0.5f);
-    glVertex3f(pos.x - oy, pos.y + ox, 0);
-    glVertex3f(pos.x + oy, pos.y - ox, 0);
+
+    drawData.vertices ~= [
+      pos.x - oy, pos.y + ox, 0,
+      pos.x + oy, pos.y - ox, 0
+    ];
   }
 }
 

@@ -6,8 +6,14 @@
 module abagames.gr.screen;
 
 private import std.math;
-private import opengl;
-private import openglu;
+version (USE_GLES) {
+  private import opengles;
+  private import opengles_glu;
+  alias glOrthof glOrtho;
+} else {
+  private import opengl;
+  private import openglu;
+}
 private import abagames.util.rand;
 private import abagames.util.sdl.screen3d;
 private import abagames.util.sdl.luminous;

@@ -6,7 +6,11 @@
 module abagames.gr.ship;
 
 private import std.math;
-private import opengl;
+version (USE_GLES) {
+  private import opengles;
+} else {
+  private import opengl;
+}
 private import abagames.util.vector;
 private import abagames.util.rand;
 private import abagames.util.math;
@@ -163,14 +167,35 @@ public class Ship {
     for (int i = 0; i < boatNum; i++)
       boat[i].draw();
     if (gameMode == InGameState.GameMode.DOUBLE_PLAY && boat[0].hasCollision) {
-      Screen.setColor(0.5f, 0.5f, 0.9f, 0.8f);
-      glBegin(GL_LINE_STRIP);
-      glVertex2f(boat[0].pos.x, boat[0].pos.y);
-      Screen.setColor(0.5f, 0.5f, 0.9f, 0.3f);
-      glVertex2f(midstPos.x, midstPos.y);
-      Screen.setColor(0.5f, 0.5f, 0.9f, 0.8f);
-      glVertex2f(boat[1].pos.x, boat[1].pos.y);
-      glEnd();
+      {
+        GLfloat[2*3] lineVertices;
+        GLfloat[4*3] lineColors;
+
+        foreach (i; 0..3) {
+          lineColors[4*i + 0] = 0.5f * Screen.brightness;
+          lineColors[4*i + 1] = 0.5f * Screen.brightness;
+          lineColors[4*i + 2] = 0.9f * Screen.brightness;
+          lineColors[4*i + 3] = (i == 1)?(0.3f):(0.8f);
+        }
+
+        lineVertices[0*2 + 0] = boat[0].pos.x;
+        lineVertices[0*2 + 1] = boat[0].pos.y;
+        lineVertices[1*2 + 0] = midstPos.x;
+        lineVertices[1*2 + 1] = midstPos.y;
+        lineVertices[2*2 + 0] = boat[1].pos.x;
+        lineVertices[2*2 + 1] = boat[1].pos.y;
+
+        glEnableClientState(GL_VERTEX_ARRAY);
+        glEnableClientState(GL_COLOR_ARRAY);
+
+        glVertexPointer(2, GL_FLOAT, 0, cast(void *)(lineVertices.ptr));
+        glColorPointer(4, GL_FLOAT, 0, cast(void *)(lineColors.ptr));
+
+        glDrawArrays(GL_LINE_STRIP, 0, 3);
+
+        glDisableClientState(GL_COLOR_ARRAY);
+        glDisableClientState(GL_VERTEX_ARRAY);
+      }
       glPushMatrix();
       Screen.glTranslate(midstPos);
       glRotatef(-degAmongBoats * 180 / PI, 0, 0, 1);
@@ -1036,12 +1061,33 @@ public class Boat {
     if (cnt < -INVINCIBLE_CNT)
       return;
     if (fireDeg < 99999) {
-      Screen.setColor(0.5f, 0.9f, 0.7f, 0.4f);
-      glBegin(GL_LINE_STRIP);
-      glVertex2f(_pos.x, _pos.y);
-      Screen.setColor(0.5f, 0.9f, 0.7f, 0.8f);
-      glVertex2f(_pos.x + sin(fireDeg) * 20, _pos.y + cos(fireDeg) * 20);
-      glEnd();
+      GLfloat[2*2] lineVertices;
+      GLfloat[4*2] lineColors;
+
+      foreach (i; 0..2) {
+        lineColors[4*i + 0] = 0.5f * Screen.brightness;
+        lineColors[4*i + 1] = 0.9f * Screen.brightness;
+        lineColors[4*i + 2] = 0.7f * Screen.brightness;
+        lineColors[4*i + 3] = (i == 0)?(0.4f):(0.8f);
+      }
+
+      lineVertices[0*2 + 0] = _pos.x;
+      lineVertices[0*2 + 1] = _pos.y;
+      const float fireDegSin = sin(fireDeg);
+      const float fireDegCos = cos(fireDeg);
+      lineVertices[1*2 + 0] = _pos.x + fireDegSin * 20;
+      lineVertices[1*2 + 1] = _pos.y + fireDegCos * 20;
+
+      glEnableClientState(GL_VERTEX_ARRAY);
+      glEnableClientState(GL_COLOR_ARRAY);
+
+      glVertexPointer(2, GL_FLOAT, 0, cast(void *)(lineVertices.ptr));
+      glColorPointer(4, GL_FLOAT, 0, cast(void *)(lineColors.ptr));
+
+      glDrawArrays(GL_LINE_STRIP, 0, 2);
+
+      glDisableClientState(GL_COLOR_ARRAY);
+      glDisableClientState(GL_VERTEX_ARRAY);
     }
     if (cnt < 0 && (-cnt % 32) < 16)
       return;
@@ -1076,26 +1122,33 @@ public class Boat {
   }
 
   private void drawSight(float x, float y, float size) {
-    glBegin(GL_LINE_STRIP);
-    glVertex2f(x - size, y - size * 0.5f);
-    glVertex2f(x - size, y - size);
-    glVertex2f(x - size * 0.5f, y - size);
-    glEnd();
-    glBegin(GL_LINE_STRIP);
-    glVertex2f(x + size, y - size * 0.5f);
-    glVertex2f(x + size, y - size);
-    glVertex2f(x + size * 0.5f, y - size);
-    glEnd();
-    glBegin(GL_LINE_STRIP);
-    glVertex2f(x + size, y + size * 0.5f);
-    glVertex2f(x + size, y + size);
-    glVertex2f(x + size * 0.5f, y + size);
-    glEnd();
-    glBegin(GL_LINE_STRIP);
-    glVertex2f(x - size, y + size * 0.5f);
-    glVertex2f(x - size, y + size);
-    glVertex2f(x - size * 0.5f, y + size);
-    glEnd();
+    const GLfloat[2*(3*4)] lineVertices = [
+      x - size, y - size * 0.5f,
+      x - size, y - size,
+      x - size * 0.5f, y - size,
+
+      x + size, y - size * 0.5f,
+      x + size, y - size,
+      x + size * 0.5f, y - size,
+
+      x + size, y + size * 0.5f,
+      x + size, y + size,
+      x + size * 0.5f, y + size,
+
+      x - size, y + size * 0.5f,
+      x - size, y + size,
+      x - size * 0.5f, y + size
+    ];
+
+    glEnableClientState(GL_VERTEX_ARRAY);
+    glVertexPointer(2, GL_FLOAT, 0, cast(void *)(lineVertices.ptr));
+
+    glDrawArrays(GL_LINE_STRIP, 0, 3);
+    glDrawArrays(GL_LINE_STRIP, 3, 3);
+    glDrawArrays(GL_LINE_STRIP, 6, 3);
+    glDrawArrays(GL_LINE_STRIP, 9, 3);
+
+    glDisableClientState(GL_VERTEX_ARRAY);
   }
 
   public void drawShape() {

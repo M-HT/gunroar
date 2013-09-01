@@ -6,10 +6,13 @@
 module abagames.gr.title;
 
 private import std.math;
-private import opengl;
+version (USE_GLES) {
+  private import opengles;
+} else {
+  private import opengl;
+}
 //private import openglu;
 private import abagames.util.vector;
-private import abagames.util.sdl.displaylist;
 private import abagames.util.sdl.texture;
 private import abagames.util.sdl.pad;
 private import abagames.util.sdl.mouse;
@@ -32,12 +35,50 @@ public class TitleManager {
   RecordableMouse mouse;
   Field field;
   GameManager gameManager;
-  DisplayList displayList;
   Texture logo;
   int cnt;
   ReplayData _replayData;
   int btnPressedCnt;
   int gameMode;
+  const GLfloat[2*4] titleTexCoords1 = [
+    0, 0,
+    1, 0,
+    1, 1,
+    0, 1
+  ];
+  const GLfloat[2*4] titleVertices1 = [
+    0, -63,
+    255, -63,
+    255, 0,
+    0, 0
+  ];
+  const GLfloat[2*(3+3)] titleVertices2 = [
+    -80, -7,
+    -20, -7,
+    10, -70,
+
+    45, -2,
+    -15, -2,
+    -45, 61
+  ];
+  const GLfloat[2*(3+3)] titleVertices3 = [
+    -19, -6,
+    -79, -6,
+    11, -69,
+
+    -16, -3,
+    44, -3,
+    -46, 60
+  ];
+  GLfloat[4*(3+3)] titleColors3 = [
+    1, 1, 1, 1,
+    0, 0, 0, 1,
+    0, 0, 0, 1,
+
+    1, 1, 1, 1,
+    0, 0, 0, 1,
+    0, 0, 0, 1
+  ];
 
   public this(PrefManager prefManager, Pad pad, Mouse mouse,
               Field field, GameManager gameManager) {
@@ -51,54 +92,16 @@ public class TitleManager {
 
   private void init() {
     logo = new Texture("title.bmp");
-    displayList = new DisplayList(1);
-    displayList.beginNewList();
-    glEnable(GL_TEXTURE_2D);
-    logo.bind();
-    Screen.setColor(1, 1, 1);
-    glBegin(GL_TRIANGLE_FAN);
-    glTexCoord2f(0, 0);
-    glVertex2f(0, -63);
-    glTexCoord2f(1, 0);
-    glVertex2f(255, -63);
-    glTexCoord2f(1, 1);
-    glVertex2f(255, 0);
-    glTexCoord2f(0, 1);
-    glVertex2f(0, 0);
-    glEnd();
-    Screen.lineWidth(3);
-    glDisable(GL_TEXTURE_2D);
-    glBegin(GL_LINE_STRIP);
-    glVertex2f(-80, -7);
-    glVertex2f(-20, -7);
-    glVertex2f(10, -70);
-    glEnd();
-    glBegin(GL_LINE_STRIP);
-    glVertex2f(45, -2);
-    glVertex2f(-15, -2);
-    glVertex2f(-45, 61);
-    glEnd();
-    glBegin(GL_TRIANGLE_FAN);
-    Screen.setColor(1, 1, 1);
-    glVertex2f(-19, -6);
-    Screen.setColor(0, 0, 0);
-    glVertex2f(-79, -6);
-    glVertex2f(11, -69);
-    glEnd();
-    glBegin(GL_TRIANGLE_FAN);
-    Screen.setColor(1, 1, 1);
-    glVertex2f(-16, -3);
-    Screen.setColor(0, 0, 0);
-    glVertex2f(44, -3);
-    glVertex2f(-46, 60);
-    glEnd();
-    Screen.lineWidth(1);
-    displayList.endNewList();
     gameMode = prefManager.prefData.gameMode;
+
+    foreach(i; 0..(3+3)) {
+      titleColors3[4*i + 0] *= Screen.brightness;
+      titleColors3[4*i + 1] *= Screen.brightness;
+      titleColors3[4*i + 2] *= Screen.brightness;
+    }
   }
 
   public void close() {
-    displayList.close();
     logo.close();
   }
 
@@ -152,6 +155,42 @@ public class TitleManager {
     cnt++;
   }
 
+  private void drawTitle() {
+    glEnable(GL_TEXTURE_2D);
+    logo.bind();
+    Screen.setColor(1, 1, 1);
+
+    glEnableClientState(GL_VERTEX_ARRAY);
+    glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+
+    glVertexPointer(2, GL_FLOAT, 0, cast(void *)(titleVertices1.ptr));
+    glTexCoordPointer(2, GL_FLOAT, 0, cast(void *)(titleTexCoords1.ptr));
+    glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+
+    glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+
+    glDisable(GL_TEXTURE_2D);
+    Screen.lineWidth(3);
+
+    glVertexPointer(2, GL_FLOAT, 0, cast(void *)(titleVertices2.ptr));
+
+    glDrawArrays(GL_LINE_STRIP, 0, 3);
+    glDrawArrays(GL_LINE_STRIP, 3, 3);
+
+    glEnableClientState(GL_COLOR_ARRAY);
+
+    glVertexPointer(2, GL_FLOAT, 0, cast(void *)(titleVertices3.ptr));
+    glColorPointer(4, GL_FLOAT, 0, cast(void *)(titleColors3.ptr));
+
+    glDrawArrays(GL_TRIANGLE_FAN, 0, 3);
+    glDrawArrays(GL_TRIANGLE_FAN, 3, 3);
+
+    Screen.lineWidth(1);
+
+    glDisableClientState(GL_COLOR_ARRAY);
+    glDisableClientState(GL_VERTEX_ARRAY);
+  }
+
   public void draw() {
     if (gameMode < 0) {
       Letter.drawString("REPLAY", 3, 400, 5);
@@ -166,7 +205,7 @@ public class TitleManager {
     glPushMatrix();
     glTranslatef(80 * ts, 240, 0);
     glScalef(ts, ts, 0);
-    displayList.call();
+    drawTitle();
     glPopMatrix();
     if (cnt > 150) {
       Letter.drawString("HIGH", 3, 305, 4, Letter.Direction.TO_RIGHT, 1);

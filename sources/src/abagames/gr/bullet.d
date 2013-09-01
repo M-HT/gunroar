@@ -7,7 +7,11 @@ module abagames.gr.bullet;
 
 private import std.math;
 private import std.c.stdarg;
-private import opengl;
+version (USE_GLES) {
+  private import opengles;
+} else {
+  private import opengl;
+}
 private import abagames.util.actor;
 private import abagames.util.vector;
 private import abagames.util.math;

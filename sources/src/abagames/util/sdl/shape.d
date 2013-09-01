@@ -7,7 +7,6 @@ module abagames.util.sdl.shape;
 
 private import opengl;
 private import abagames.util.vector;
-private import abagames.util.sdl.displaylist;
 
 /**
  * Interface for drawing a shape.
@@ -45,24 +44,20 @@ public template CollidableImpl() {
  * Drawable that has a single displaylist.
  */
 public abstract class DrawableShape: Drawable {
-  protected DisplayList displayList;
  private:
 
   public this() {
-    displayList = new DisplayList(1);
-    displayList.beginNewList();
-    createDisplayList();
-    displayList.endNewList();
+    prepareShape();
   }
 
-  protected abstract void createDisplayList();
+  protected abstract void prepareShape();
+  protected abstract void drawShape();
 
   public void close() {
-    displayList.close();
   }
 
   public void draw() {
-    displayList.call(0);
+    drawShape();
   }
 }
 
