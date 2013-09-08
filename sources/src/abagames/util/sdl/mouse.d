@@ -42,6 +42,15 @@ public class Mouse: Input {
   public MouseState getState() {
     int mx, my;
     int btn = SDL_GetMouseState(&mx, &my);
+    version (PANDORA) {
+      mx -= screen.startx;
+      my -= screen.starty;
+
+      if (mx < 0) mx = 0;
+      if (my < 0) my = 0;
+      if (mx >= screen.width) mx = screen.width - 1;
+      if (my >= screen.height) my = screen.height - 1;
+    }
     state.x = mx;
     state.y = my;
     /*int mvx, mvy;
@@ -57,8 +66,18 @@ public class Mouse: Input {
     else if (state.y >= screen.height)
       state.x = screen.height - 1;*/
     state.button = 0;
-    if (btn & SDL_BUTTON(1))
-      state.button |= MouseState.Button.LEFT;
+    if (btn & SDL_BUTTON(1)) {
+      version (PANDORA) {
+        Uint8 *keys = SDL_GetKeyState(null);
+        if (keys[SDLK_RSHIFT] == SDL_PRESSED) {
+          state.button |= MouseState.Button.RIGHT;
+        } else {
+          state.button |= MouseState.Button.LEFT;
+        }
+      } else {
+        state.button |= MouseState.Button.LEFT;
+      }
+    }
     if (btn & SDL_BUTTON(3))
       state.button |= MouseState.Button.RIGHT;
     adjustPos(state);

@@ -19,4 +19,6 @@ public interface SizableScreen {
   public bool windowMode();
   public int width();
   public int height();
+  public int startx();
+  public int starty();
 }

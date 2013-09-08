@@ -5,6 +5,9 @@
  */
 module abagames.util.sdl.twinstick;
 
+version (PANDORA) {
+  private import std.conv;
+}
 private import std.string;
 private import std.stdio;
 private import std.math;
@@ -24,6 +27,9 @@ public class TwinStick: Input {
   bool enableAxis5 = false;
  private:
   SDL_Joystick *stick = null;
+version (PANDORA) {
+  SDL_Joystick *stick2 = null;
+}
   const int JOYSTICK_AXIS_MAX = 32768;
   TwinStickState state;
 
@@ -35,9 +41,24 @@ public class TwinStick: Input {
     if (st == null) {
       if (SDL_InitSubSystem(SDL_INIT_JOYSTICK) < 0)
         return null;
-      stick = SDL_JoystickOpen(0);
+      version (PANDORA) {
+        foreach (i; 0..SDL_NumJoysticks()) {
+          if (to!string(SDL_JoystickName(i)) == "nub0") {
+            stick = SDL_JoystickOpen(i);
+          }
+        }
+      } else {
+        stick = SDL_JoystickOpen(0);
+      }
     } else {
       stick = st;
+    }
+    version (PANDORA) {
+      foreach (i; 0..SDL_NumJoysticks()) {
+        if (to!string(SDL_JoystickName(i)) == "nub1") {
+          stick2 = SDL_JoystickOpen(i);
+        }
+      }
     }
     return stick;
   }
@@ -50,12 +71,17 @@ public class TwinStick: Input {
     if (stick) {
       state.left.x = adjustAxis(SDL_JoystickGetAxis(stick, 0));
       state.left.y = -adjustAxis(SDL_JoystickGetAxis(stick, 1));
-      int rx = 0;
-      if (enableAxis5)
-        rx = SDL_JoystickGetAxis(stick, 4);
-      else
-        rx = SDL_JoystickGetAxis(stick, 2);
-      int ry = SDL_JoystickGetAxis(stick, 3);
+      version (PANDORA) {
+        int rx = SDL_JoystickGetAxis(stick2, 0);
+        int ry = SDL_JoystickGetAxis(stick2, 1);
+      } else {
+        int rx = 0;
+        if (enableAxis5)
+          rx = SDL_JoystickGetAxis(stick, 4);
+        else
+          rx = SDL_JoystickGetAxis(stick, 2);
+        int ry = SDL_JoystickGetAxis(stick, 3);
+      }
       if (rx == 0 && ry == 0) {
         state.right.x = state.right.y = 0;
       } else {
@@ -70,22 +96,42 @@ public class TwinStick: Input {
     } else {
       state.left.x = state.left.y = state.right.x = state.right.y = 0;
     }
-    if (keys[SDLK_d] == SDL_PRESSED)
-      state.left.x = 1;
-    if (keys[SDLK_l] == SDL_PRESSED)
-      state.right.x = 1;
-    if (keys[SDLK_a] == SDL_PRESSED)
-      state.left.x = -1;
-    if (keys[SDLK_j] == SDL_PRESSED)
-      state.right.x = -1;
-    if (keys[SDLK_s] == SDL_PRESSED)
-      state.left.y = -1;
-    if (keys[SDLK_k] == SDL_PRESSED)
-      state.right.y = -1;
-    if (keys[SDLK_w] == SDL_PRESSED)
-      state.left.y = 1;
-    if (keys[SDLK_i] == SDL_PRESSED)
-      state.right.y = 1;
+    version (PANDORA) {
+      if (keys[SDLK_RIGHT] == SDL_PRESSED)
+        state.left.x = 1;
+      if (keys[SDLK_LEFT] == SDL_PRESSED)
+        state.left.x = -1;
+      if (keys[SDLK_DOWN] == SDL_PRESSED)
+        state.left.y = -1;
+      if (keys[SDLK_UP] == SDL_PRESSED)
+        state.left.y = 1;
+
+      if (keys[SDLK_END] == SDL_PRESSED)
+        state.right.x = 1;
+      if (keys[SDLK_HOME] == SDL_PRESSED)
+        state.right.x = -1;
+      if (keys[SDLK_PAGEDOWN] == SDL_PRESSED)
+        state.right.y = -1;
+      if (keys[SDLK_PAGEUP] == SDL_PRESSED)
+        state.right.y = 1;
+    } else {
+      if (keys[SDLK_d] == SDL_PRESSED)
+        state.left.x = 1;
+      if (keys[SDLK_l] == SDL_PRESSED)
+        state.right.x = 1;
+      if (keys[SDLK_a] == SDL_PRESSED)
+        state.left.x = -1;
+      if (keys[SDLK_j] == SDL_PRESSED)
+        state.right.x = -1;
+      if (keys[SDLK_s] == SDL_PRESSED)
+        state.left.y = -1;
+      if (keys[SDLK_k] == SDL_PRESSED)
+        state.right.y = -1;
+      if (keys[SDLK_w] == SDL_PRESSED)
+        state.left.y = 1;
+      if (keys[SDLK_i] == SDL_PRESSED)
+        state.right.y = 1;
+    }
     return state;
   }
 
