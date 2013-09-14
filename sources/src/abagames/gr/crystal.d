@@ -87,7 +87,9 @@ public class Crystal: Actor {
       r *= (cast(float) (COUNT - cnt)) / (COUNT - PULLIN_COUNT);
     for (int i = 0; i < 4; i++) {
       glPushMatrix();
-      glTranslatef(pos.x + sin(d) * r, pos.y + cos(d) * r, 0);
+      const float dSin = sin(d);
+      const float dCos = cos(d);
+      glTranslatef(pos.x + dSin * r, pos.y + dCos * r, 0);
       _shape.draw();
       glPopMatrix();
       d += PI / 2;

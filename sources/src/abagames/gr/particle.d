@@ -340,15 +340,19 @@ public class Smoke: LuminousActor {
         if (sp > 0.3f) {
           float d = atan2(vel.x, vel.y);
           assert(d <>= 0);
-          wakePos.x = pos.x + sin(d + PI / 2) * size * 0.25f;
-          wakePos.y = pos.y + cos(d + PI / 2) * size * 0.25f;
+          const float dSin1 = sin(d + cast(float)(PI / 2));
+          const float dCos1 = cos(d + cast(float)(PI / 2));
+          wakePos.x = pos.x + dSin1 * size * 0.25f;
+          wakePos.y = pos.y + dCos1 * size * 0.25f;
           Wake w = wakes.getInstanceForced();
           assert(wakePos.x <>= 0);
           assert(wakePos.y <>= 0);
           w.set(wakePos, d + PI - 0.2f + rand.nextSignedFloat(0.1f), sp * 0.33f,
                 20 + rand.nextInt(12), size * (7.0f + rand.nextFloat(3)));
-          wakePos.x = pos.x + sin(d - PI / 2) * size * 0.25f;
-          wakePos.y = pos.y + cos(d - PI / 2) * size * 0.25f;
+          const float dSin2 = sin(d - cast(float)(PI / 2));
+          const float dCos2 = cos(d - cast(float)(PI / 2));
+          wakePos.x = pos.x + dSin2 * size * 0.25f;
+          wakePos.y = pos.y + dCos2 * size * 0.25f;
           w = wakes.getInstanceForced();
           assert(wakePos.x <>= 0);
           assert(wakePos.y <>= 0);
@@ -720,8 +724,10 @@ public class Wake: Actor {
     pos.y = p.y;
     this.deg = deg;
     this.speed = speed;
-    vel.x = sin(deg) * speed;
-    vel.y = cos(deg) * speed;
+    const float degSin = sin(deg);
+    const float degCos = cos(deg);
+    vel.x = degSin * speed;
+    vel.y = degCos * speed;
     cnt = c;
     size = sz;
     revShape = rs;

@@ -392,9 +392,10 @@ version (PANDORA) {
     if (nci >= TIME_COLOR_INDEX)
       nci = 0;
     float co = time - ci;
+    float s1co = 1 - co;
     for (int i = 0; i < 6; i++)
       for (int j = 0; j < 3; j++)
-        baseColor[i][j] = baseColorTime[ci][i][j] * (1 - co) + baseColorTime[nci][i][j] * co;
+        baseColor[i][j] = baseColorTime[ci][i][j] * s1co + baseColorTime[nci][i][j] * co;
     int by = cast(int) screenY;
     float oy = screenY - by;
     float sx;

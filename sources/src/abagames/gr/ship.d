@@ -605,8 +605,10 @@ public class Boat {
         rd = atan2(_pos.x - he.pos.x, _pos.y - he.pos.y);
       assert(rd <>= 0);
       float sz = he.size;
-      refVel.x = sin(rd) * sz * 0.1f;
-      refVel.y = cos(rd) * sz * 0.1f;
+      const float rdSin = sin(rd);
+      const float rdCos = cos(rd);
+      refVel.x = rdSin * sz * 0.1f;
+      refVel.y = rdCos * sz * 0.1f;
       float rs = refVel.vctSize;
       if (rs > 1) {
         refVel.x /= rs;
@@ -780,8 +782,10 @@ public class Boat {
       SoundManager.playSe("shot.wav");
       Shot s = shots.getInstance();
       int foc = (fireSprCnt % 2) * 2 - 1;
-      firePos.x = _pos.x + cos(fireDeg + PI) * 0.2f * foc;
-      firePos.y = _pos.y - sin(fireDeg + PI) * 0.2f * foc;
+      const float fireDegSin = sin(fireDeg + cast(float)(PI));
+      const float fireDegCos = cos(fireDeg + cast(float)(PI));
+      firePos.x = _pos.x + fireDegCos * 0.2f * foc;
+      firePos.y = _pos.y - fireDegSin * 0.2f * foc;
       if (s)
         s.set(firePos, fireDeg);
       fireCnt = cast(int) fireInterval;
@@ -802,7 +806,9 @@ public class Boat {
         s.set(firePos, fireDeg + td);
       Smoke sm = smokes.getInstanceForced();
       float sd = fireDeg + td / 2;
-      sm.set(firePos, sin(sd) * Shot.SPEED * 0.33f, cos(sd) * Shot.SPEED * 0.33f, 0,
+      const float sdSin = sin(sd);
+      const float sdCos = cos(sd);
+      sm.set(firePos, sdSin * Shot.SPEED * 0.33f, sdCos * Shot.SPEED * 0.33f, 0,
              Smoke.SmokeType.SPARK, 10, 0.33f);
     }
     fireCnt--;
@@ -818,9 +824,11 @@ public class Boat {
         for (int i = 0; i < 4; i++) {
           Smoke sm = smokes.getInstanceForced();
           float sd = fd + rand.nextSignedFloat(1);
+          const float sdSin = sin(sd);
+          const float sdCos = cos(sd);
           sm.set(pos,
-                 sin(sd) * Shot.LANCE_SPEED * i * 0.2f,
-                 cos(sd) * Shot.LANCE_SPEED * i * 0.2f,
+                 sdSin * Shot.LANCE_SPEED * i * 0.2f,
+                 sdCos * Shot.LANCE_SPEED * i * 0.2f,
                  0, Smoke.SmokeType.SPARK, 15, 0.5f);
         }
         fireLanceCnt = FIRE_LANCE_INTERVAL;
@@ -843,8 +851,10 @@ public class Boat {
         if (rsd > 1)
           rsd = 1;
         fireSprDeg = 1 - rsd + 0.05f;
-        firePos.x = _pos.x + cos(fireDeg + PI) * 0.2f * foc;
-        firePos.y = _pos.y - sin(fireDeg + PI) * 0.2f * foc;
+        const float fireDegSin = sin(fireDeg + cast(float)(PI));
+        const float fireDegCos = cos(fireDeg + cast(float)(PI));
+        firePos.x = _pos.x + fireDegCos * 0.2f * foc;
+        firePos.y = _pos.y - fireDegSin * 0.2f * foc;
         fireCnt = cast(int) fireInterval;
         float td;
         switch (foc) {
@@ -866,7 +876,9 @@ public class Boat {
           s.set(firePos, fireDeg + td, false, 2);
         Smoke sm = smokes.getInstanceForced();
         float sd = fireDeg + td / 2;
-        sm.set(firePos, sin(sd) * Shot.SPEED * 0.33f, cos(sd) * Shot.SPEED * 0.33f, 0,
+        const float sdSin = sin(sd);
+        const float sdCos = cos(sd);
+        sm.set(firePos, sdSin * Shot.SPEED * 0.33f, sdCos * Shot.SPEED * 0.33f, 0,
                Smoke.SmokeType.SPARK, 10, 0.33f);
       }
     } else {
@@ -892,15 +904,19 @@ public class Boat {
       SoundManager.playSe("shot.wav");
       int foc = (fireSprCnt % 2) * 2 - 1;
       fireDeg = 0;//ship.degAmongBoats() + PI / 2;
-      firePos.x = _pos.x + cos(fireDeg + PI) * 0.2f * foc;
-      firePos.y = _pos.y - sin(fireDeg + PI) * 0.2f * foc;
+      const float fireDegSin = sin(fireDeg + cast(float)(PI));
+      const float fireDegCos = cos(fireDeg + cast(float)(PI));
+      firePos.x = _pos.x + fireDegCos * 0.2f * foc;
+      firePos.y = _pos.y - fireDegSin * 0.2f * foc;
       Shot s = shots.getInstance();
       if (s)
         s.set(firePos, fireDeg, false , 2);
       fireCnt = cast(int) fireInterval;
       Smoke sm = smokes.getInstanceForced();
       float sd = fireDeg;
-      sm.set(firePos, sin(sd) * Shot.SPEED * 0.33f, cos(sd) * Shot.SPEED * 0.33f, 0,
+      const float sdSin = sin(sd);
+      const float sdCos = cos(sd);
+      sm.set(firePos, sdSin * Shot.SPEED * 0.33f, sdCos * Shot.SPEED * 0.33f, 0,
              Smoke.SmokeType.SPARK, 10, 0.33f);
       if (idx == 0) {
         float fd = ship.degAmongBoats() + PI / 2;
@@ -915,8 +931,10 @@ public class Boat {
         default:
           break;
         }
-        firePos.x = ship.midstPos.x + cos(fd + PI) * 0.2f * foc;
-        firePos.y = ship.midstPos.y - sin(fd + PI) * 0.2f * foc;
+        const float fdSin1 = sin(fd + cast(float)(PI));
+        const float fdCos1 = cos(fd + cast(float)(PI));
+        firePos.x = ship.midstPos.x + fdCos1 * 0.2f * foc;
+        firePos.y = ship.midstPos.y - fdSin1 * 0.2f * foc;
         s = shots.getInstance();
         if (s)
           s.set(firePos, fd, false, 2);
@@ -924,7 +942,9 @@ public class Boat {
         if (s)
           s.set(firePos, fd + td, false , 2);
         sm = smokes.getInstanceForced();
-        sm.set(firePos, sin(fd + td / 2) * Shot.SPEED * 0.33f, cos(fd + td / 2) * Shot.SPEED * 0.33f, 0,
+        const float fdSin2 = sin(fd + td / 2);
+        const float fdCos2 = cos(fd + td / 2);
+        sm.set(firePos, fdSin2 * Shot.SPEED * 0.33f, fdCos2 * Shot.SPEED * 0.33f, 0,
                Smoke.SmokeType.SPARK, 10, 0.33f);
       }
       fireSprCnt++;
@@ -950,8 +970,10 @@ public class Boat {
         if (mouseInput.button & MouseState.Button.RIGHT)
           fstd += 0.5f;
         fireSprDeg += (fstd - fireSprDeg) * 0.16f;
-        firePos.x = _pos.x + cos(fireDeg + PI) * 0.2f * foc;
-        firePos.y = _pos.y - sin(fireDeg + PI) * 0.2f * foc;
+        const float fireDegSin = sin(fireDeg + cast(float)(PI));
+        const float fireDegCos = cos(fireDeg + cast(float)(PI));
+        firePos.x = _pos.x + fireDegCos * 0.2f * foc;
+        firePos.y = _pos.y - fireDegSin * 0.2f * foc;
         fireCnt = cast(int) fireInterval;
         float td;
         switch (foc) {
@@ -973,7 +995,9 @@ public class Boat {
           s.set(firePos, fireDeg + td, false, 2);
         Smoke sm = smokes.getInstanceForced();
         float sd = fireDeg + td / 2;
-        sm.set(firePos, sin(sd) * Shot.SPEED * 0.33f, cos(sd) * Shot.SPEED * 0.33f, 0,
+        const float sdSin = sin(sd);
+        const float sdCos = cos(sd);
+        sm.set(firePos, sdSin * Shot.SPEED * 0.33f, sdCos * Shot.SPEED * 0.33f, 0,
                Smoke.SmokeType.SPARK, 10, 0.33f);
       }
     }

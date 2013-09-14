@@ -308,8 +308,10 @@ public class EnemyState {
     if (checkCurrentPos)
       si = 0;
     for (int i = si; i < 5; i++) {
-      float cx = pos.x + sin(deg) * i * spec.size;
-      float cy = pos.y + cos(deg) * i * spec.size;
+      const float degSin = sin(deg);
+      const float degCos = cos(deg);
+      float cx = pos.x + degSin * i * spec.size;
+      float cy = pos.y + degCos * i * spec.size;
       if (field.getBlock(cx, cy) >= 0)
         return false;
       if (enemies.checkHitShip(cx, cy, enemy, true))
@@ -382,8 +384,11 @@ public class EnemyState {
   public bool destroyed(Shot shot = null) {
     float vz;
     if (shot) {
-      explodeVel.x = Shot.SPEED * sin(shot.deg) / 2;
-      explodeVel.y = Shot.SPEED * cos(shot.deg) / 2;
+      const float deg = shot.deg;
+      const float degSin = sin(deg);
+      const float degCos = cos(deg);
+      explodeVel.x = Shot.SPEED * degSin / 2;
+      explodeVel.y = Shot.SPEED * degCos / 2;
       vz = 0;
     } else {
       explodeVel.x = explodeVel.y = 0;
@@ -498,16 +503,18 @@ public class EnemyState {
       float sr = rand.nextFloat(0.5f);
       float sd = spd[si] + rand.nextSignedFloat(0.2f);
       assert(sd <>= 0);
-      s.set(edgePos, sin(sd) * sr, cos(sd) * sr, -0.004f,
+      const float sdSin = sin(sd);
+      const float sdCos = cos(sd);
+      s.set(edgePos, sdSin * sr, sdCos * sr, -0.004f,
             Smoke.SmokeType.EXPLOSION, 75 + rand.nextInt(25), ss);
       for (int j = 0; j < 2; j++) {
         Spark sp = sparks.getInstanceForced();
-        sp.set(edgePos, sin(sd) * sr * 2, cos(sd) * sr * 2,
+        sp.set(edgePos, sdSin * sr * 2, sdCos * sr * 2,
                0.5f + rand.nextFloat(0.5f), 0.5f + rand.nextFloat(0.5f), 0, 30 + rand.nextInt(30));
       }
       if (i % 2 == 0) {
         SparkFragment sf = sparkFragments.getInstanceForced();
-        sf.set(edgePos, sin(sd) * sr * 0.5f, cos(sd) * sr * 0.5f, 0.06f + rand.nextFloat(0.07f),
+        sf.set(edgePos, sdSin * sr * 0.5f, sdCos * sr * 0.5f, 0.06f + rand.nextFloat(0.07f),
                (0.2f + rand.nextFloat(0.1f)));
       }
     }
@@ -906,15 +913,21 @@ public class SmallShipEnemySpec: EnemySpec, HasAppearType {
       return false;
     switch (type) {
     case MoveType.STOPANDGO:
-      es.pos.x += sin(es.velDeg) * es.speed;
-      es.pos.y += cos(es.velDeg) * es.speed;
+      const float velDeg1 = es.velDeg;
+      const float velDegSin1 = sin(velDeg1);
+      const float velDegCos1 = cos(velDeg1);
+      es.pos.x += velDegSin1 * es.speed;
+      es.pos.y += velDegCos1 * es.speed;
       es.pos.y -= field.lastScrollY;
       if  (es.pos.y <= -field.outerSize.y)
         return false;
       if (field.getBlock(es.pos) >= 0 || !field.checkInOuterHeightField(es.pos)) {
         es.velDeg += PI;
-        es.pos.x += sin(es.velDeg) * es.speed * 2;
-        es.pos.y += cos(es.velDeg) * es.speed * 2;
+        const float velDeg2 = es.velDeg;
+        const float velDegSin2 = sin(velDeg2);
+        const float velDegCos2 = cos(velDeg2);
+        es.pos.x += velDegSin2 * es.speed * 2;
+        es.pos.y += velDegCos2 * es.speed * 2;
       }
       switch (es.state) {
       case MoveState.MOVING:
@@ -939,15 +952,21 @@ public class SmallShipEnemySpec: EnemySpec, HasAppearType {
       }
       break;
     case MoveType.CHASE:
-      es.pos.x += sin(es.velDeg) * speed;
-      es.pos.y += cos(es.velDeg) * speed;
+      const float velDeg3 = es.velDeg;
+      const float velDegSin3 = sin(velDeg3);
+      const float velDegCos3 = cos(velDeg3);
+      es.pos.x += velDegSin3 * speed;
+      es.pos.y += velDegCos3 * speed;
       es.pos.y -= field.lastScrollY;
       if  (es.pos.y <= -field.outerSize.y)
         return false;
       if (field.getBlock(es.pos) >= 0 || !field.checkInOuterHeightField(es.pos)) {
         es.velDeg += PI;
-        es.pos.x += sin(es.velDeg) * es.speed * 2;
-        es.pos.y += cos(es.velDeg) * es.speed * 2;
+        const float velDeg4 = es.velDeg;
+        const float velDegSin4 = sin(velDeg4);
+        const float velDegCos4 = cos(velDeg4);
+        es.pos.x += velDegSin4 * es.speed * 2;
+        es.pos.y += velDegCos4 * es.speed * 2;
       }
       float ad;
       Vector shipPos = ship.nearPos(es.pos);
@@ -1228,8 +1247,11 @@ public class ShipEnemySpec: EnemySpec, HasAppearType {
       return false;
     if (!super.move(es))
       return false;
-    es.pos.x += sin(es.deg) * es.speed;
-    es.pos.y += cos(es.deg) * es.speed;
+    const float deg = es.deg;
+    const float degSin = sin(deg);
+    const float degCos = cos(deg);
+    es.pos.x += degSin * es.speed;
+    es.pos.y += degCos * es.speed;
     es.pos.y -= field.lastScrollY;
     if  (es.pos.x <= -field.outerSize.x - size || es.pos.x >= field.outerSize.x + size ||
          es.pos.y <= -field.outerSize.y - size)

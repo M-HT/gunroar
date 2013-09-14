@@ -90,8 +90,10 @@ version (PANDORA) {
         assert(rd <>= 0);
         float rl = sqrt(cast(float) rx * rx + cast(float) ry * ry);
         assert(rl <>= 0);
-        state.right.x = adjustAxis(cast(int) (sin(rd) * rl));
-        state.right.y = adjustAxis(cast(int) (cos(rd) * rl));
+        const float rdSin = sin(rd);
+        const float rdCos = cos(rd);
+        state.right.x = adjustAxis(cast(int) (rdSin * rl));
+        state.right.y = adjustAxis(cast(int) (rdCos * rl));
       }
     } else {
       state.left.x = state.left.y = state.right.x = state.right.y = 0;
