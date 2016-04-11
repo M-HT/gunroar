@@ -160,9 +160,12 @@ public class Turret {
         pos.dist(shipPos) > spec.minRange) {
       float bd = baseDeg + deg;
       Smoke s = smokes.getInstance();
-      if (s)
-        s.set(pos, sin(bd) * bulletSpeed, cos(bd) * bulletSpeed, 0,
+      if (s) {
+        const float bdSin = sin(bd);
+        const float bdCos = cos(bd);
+        s.set(pos, bdSin * bulletSpeed, bdCos * bulletSpeed, 0,
               Smoke.SmokeType.SPARK, 20, spec.size * 2);
+      }
       int nw = spec.nway;
       if (spec.nwayChange && burstCnt % 2 == 1)
         nw--;
@@ -216,35 +219,41 @@ public class Turret {
     if (spec.nway <= 1) {
       glBegin(GL_LINE_STRIP);
       Screen.setColor(0.9f, 0.1f, 0.1f, a);
-      glVertex2f(pos.x + sin(td) * spec.minRange, pos.y + cos(td) * spec.minRange);
+      const float tdSin1 = sin(td);
+      const float tdCos1 = cos(td);
+      glVertex2f(pos.x + tdSin1 * spec.minRange, pos.y + tdCos1 * spec.minRange);
       Screen.setColor(0.9f, 0.1f, 0.1f, a * 0.5f);
-      glVertex2f(pos.x + sin(td) * spec.maxRange, pos.y + cos(td) * spec.maxRange);
+      glVertex2f(pos.x + tdSin1 * spec.maxRange, pos.y + tdCos1 * spec.maxRange);
       glEnd();
     } else {
       td -= spec.nwayAngle * (spec.nway - 1) / 2;
+      float tdSin2 = sin(td);
+      float tdCos2 = cos(td);
       glBegin(GL_LINE_STRIP);
       Screen.setColor(0.9f, 0.1f, 0.1f, a * 0.75f);
-      glVertex2f(pos.x + sin(td) * spec.minRange, pos.y + cos(td) * spec.minRange);
+      glVertex2f(pos.x + tdSin2 * spec.minRange, pos.y + tdCos2 * spec.minRange);
       Screen.setColor(0.9f, 0.1f, 0.1f, a * 0.25f);
-      glVertex2f(pos.x + sin(td) * spec.maxRange, pos.y + cos(td) * spec.maxRange);
+      glVertex2f(pos.x + tdSin2 * spec.maxRange, pos.y + tdCos2 * spec.maxRange);
       glEnd();
       glBegin(GL_QUADS);
       for (int i = 0; i < spec.nway - 1; i++) {
         Screen.setColor(0.9f, 0.1f, 0.1f, a * 0.3f);
-        glVertex2f(pos.x + sin(td) * spec.minRange, pos.y + cos(td) * spec.minRange);
+        glVertex2f(pos.x + tdSin2 * spec.minRange, pos.y + tdCos2 * spec.minRange);
         Screen.setColor(0.9f, 0.1f, 0.1f, a * 0.05f);
-        glVertex2f(pos.x + sin(td) * spec.maxRange, pos.y + cos(td) * spec.maxRange);
+        glVertex2f(pos.x + tdSin2 * spec.maxRange, pos.y + tdCos2 * spec.maxRange);
         td += spec.nwayAngle;
-        glVertex2f(pos.x + sin(td) * spec.maxRange, pos.y + cos(td) * spec.maxRange);
+        tdSin2 = sin(td);
+        tdCos2 = cos(td);
+        glVertex2f(pos.x + tdSin2 * spec.maxRange, pos.y + tdCos2 * spec.maxRange);
         Screen.setColor(0.9f, 0.1f, 0.1f, a * 0.3f);
-        glVertex2f(pos.x + sin(td) * spec.minRange, pos.y + cos(td) * spec.minRange);
+        glVertex2f(pos.x + tdSin2 * spec.minRange, pos.y + tdCos2 * spec.minRange);
       }
       glEnd();
       glBegin(GL_LINE_STRIP);
       Screen.setColor(0.9f, 0.1f, 0.1f, a * 0.75f);
-      glVertex2f(pos.x + sin(td) * spec.minRange, pos.y + cos(td) * spec.minRange);
+      glVertex2f(pos.x + tdSin2 * spec.minRange, pos.y + tdCos2 * spec.minRange);
       Screen.setColor(0.9f, 0.1f, 0.1f, a * 0.25f);
-      glVertex2f(pos.x + sin(td) * spec.maxRange, pos.y + cos(td) * spec.maxRange);
+      glVertex2f(pos.x + tdSin2 * spec.maxRange, pos.y + tdCos2 * spec.maxRange);
       glEnd();
     }
   }
@@ -650,8 +659,10 @@ public class TurretGroup {
       float tbx, tby;
       switch (spec.alignType) {
       case TurretGroupSpec.AlignType.ROUND:
-        tbx = sin(d) * spec.radius;
-        tby = cos(d) * spec.radius;
+        const float dSin = sin(d);
+        const float dCos = cos(d);
+        tbx = dSin * spec.radius;
+        tby = dCos * spec.radius;
         break;
       case TurretGroupSpec.AlignType.STRAIGHT:
         y += my;
@@ -664,8 +675,10 @@ public class TurretGroup {
         break;
       }
       tbx *= (1 - spec.distRatio);
-      float bx = tbx * cos(-deg) - tby * sin(-deg);
-      float by = tbx * sin(-deg) + tby * cos(-deg);
+      const float degSin = sin(-deg);
+      const float degCos = cos(-deg);
+      float bx = tbx * degCos - tby * degSin;
+      float by = tbx * degSin + tby * degCos;
       alive |= turret[i].move(centerPos.x + bx, centerPos.y + by, d + deg);
       if (spec.alignType == TurretGroupSpec.AlignType.ROUND)
         d += md;
@@ -816,7 +829,8 @@ public class MovingTurretGroup {
       }
     } else {
       swingAmpCnt += spec.swingAmpVel;
-      if (cos(swingAmpCnt) > 0) {
+      const float swingAmpCntCos = cos(swingAmpCnt);
+      if (swingAmpCntCos > 0) {
         swingAmpDeg += spec.swingDegVel;
       } else {
         swingAmpDeg -= spec.swingDegVel;
@@ -842,8 +856,10 @@ public class MovingTurretGroup {
     calcAlignDeg(d, ad, md);
     for (int i = 0; i < spec.num; i++) {
       d += md;
-      float bx = sin(d) * radius * spec.xReverse;
-      float by = cos(d) * radius * (1 - spec.distRatio);
+      const float dSin = sin(d);
+      const float dCos = cos(d);
+      float bx = dSin * radius * spec.xReverse;
+      float by = dCos * radius * (1 - spec.distRatio);
       float fs, fd;
       if (fabs(bx) + fabs(by) < 0.1f) {
         fs = radius;
@@ -861,7 +877,8 @@ public class MovingTurretGroup {
 
   private void calcAlignDeg(out float d, out float ad, out float md) {
     alignAmpCnt += spec.alignAmpVel;
-    ad = spec.alignDeg * (1 + sin(alignAmpCnt) * spec.alignAmp);
+    const float alignAmpCntSin = sin(alignAmpCnt);
+    ad = spec.alignDeg * (1 + alignAmpCntSin * spec.alignAmp);
     if (spec.num > 1) {
       if (spec.moveType == MovingTurretGroupSpec.MoveType.ROLL)
         md = ad / spec.num;

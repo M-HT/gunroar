@@ -117,8 +117,10 @@ public class Bullet: Actor {
     }
     if (field.checkInOuterField(pos))
       gameManager.addSlowdownRatio(speed * 0.24f);
-    float mx = sin(deg) * speed;
-    float my = cos(deg) * speed;
+    const float degSin = sin(deg);
+    const float degCos = cos(deg);
+    float mx = degSin * speed;
+    float my = degCos * speed;
     pos.x += mx;
     pos.y += my;
     pos.y -= field.lastScrollY;
@@ -137,7 +139,9 @@ public class Bullet: Actor {
   public void startDisappear() {
     if (field.getBlock(pos) >= 0) {
       Smoke s = smokes.getInstanceForced();
-      s.set(pos, sin(deg) * speed * 0.2f, cos(deg) * speed * 0.2f, 0,
+      const float degSin = sin(deg);
+      const float degCos = cos(deg);
+      s.set(pos, degSin * speed * 0.2f, degCos * speed * 0.2f, 0,
             Smoke.SmokeType.SAND, 30, size * 0.5f);
     } else {
       Wake w = wakes.getInstanceForced();
@@ -178,9 +182,12 @@ public class Bullet: Actor {
     //if (shape.checkCollision(ox, oy, s)) {
       shot.removeHitToBullet();
       Smoke s1 = smokes.getInstance();
-      if (s1)
-        s1.set(pos, sin(deg) * speed, cos(deg) * speed, 0,
+      if (s1) {
+        const float degSin = sin(deg);
+        const float degCos = cos(deg);
+        s1.set(pos, degSin * speed, degCos * speed, 0,
                Smoke.SmokeType.SPARK, 30, size * 0.5f);
+      }
       remove();
     }
   }

@@ -169,8 +169,10 @@ public class BaseShape: DrawableShape {
           (i <= POINT_NUM / 5 || i > POINT_NUM * 4 / 5))
         continue;
       d = PI * 2 * i / POINT_NUM;
-      float cx = sin(d) * size * s * (1 - distRatio);
-      float cy = cos(d) * size * s;
+      const float dSin = sin(d);
+      const float dCos = cos(d);
+      float cx = dSin * size * s * (1 - distRatio);
+      float cy = dCos * size * s;
       float sx, sy;
       if (i == POINT_NUM / 4 || i == POINT_NUM / 4 * 3)
         sy = 0;
@@ -213,8 +215,10 @@ public class BaseShape: DrawableShape {
       pn = 3;
     for (int i = 0; i <= pn; i++) {
       d = PI * 2 * i / 4 + PI / 4;
-      float px = sin(d) * size * s;
-      float py = cos(d) * size * s;
+      const float dSin = sin(d);
+      const float dCos = cos(d);
+      float px = dSin * size * s;
+      float py = dCos * size * s;
       if (py > 0)
         py *= yRatio;
       glVertex3f(px, py, z);
@@ -225,7 +229,9 @@ public class BaseShape: DrawableShape {
     float d;
     for (int i = 0; i < PILLAR_POINT_NUM; i++) {
       d = PI * 2 * i / PILLAR_POINT_NUM;
-      glVertex3f(sin(d) * s + p.x, cos(d) * s + p.y, z);
+      const float dSin = sin(d);
+      const float dCos = cos(d);
+      glVertex3f(dSin * s + p.x, dCos * s + p.y, z);
     }
   }
 
@@ -236,12 +242,16 @@ public class BaseShape: DrawableShape {
     float sz = size;
     if (sz > 10)
       sz = 10;
-    wakePos.x = pos.x + sin(deg + PI / 2 + 0.7f) * size * 0.5f * sr;
-    wakePos.y = pos.y + cos(deg + PI / 2 + 0.7f) * size * 0.5f * sr;
+    const float degSin1 = sin(deg + cast(float)(PI / 2 + 0.7f));
+    const float degCos1 = cos(deg + cast(float)(PI / 2 + 0.7f));
+    wakePos.x = pos.x + degSin1 * size * 0.5f * sr;
+    wakePos.y = pos.y + degCos1 * size * 0.5f * sr;
     Wake w = wakes.getInstanceForced();
     w.set(wakePos, deg + PI - 0.2f + rand.nextSignedFloat(0.1f), sp, 40, sz * 32 * sr);
-    wakePos.x = pos.x + sin(deg - PI / 2 - 0.7f) * size * 0.5f * sr;
-    wakePos.y = pos.y + cos(deg - PI / 2 - 0.7f) * size * 0.5f * sr;
+    const float degSin2 = sin(deg - cast(float)(PI / 2 + 0.7f));
+    const float degCos2 = cos(deg - cast(float)(PI / 2 + 0.7f));
+    wakePos.x = pos.x + degSin2 * size * 0.5f * sr;
+    wakePos.y = pos.y + degCos2 * size * 0.5f * sr;
     w = wakes.getInstanceForced();
     w.set(wakePos, deg + PI + 0.2f + rand.nextSignedFloat(0.1f), sp, 40, sz * 32 * sr);
   }
@@ -264,8 +274,10 @@ public class BaseShape: DrawableShape {
       cs *= distRatio;
       if (cs < 0.2f)
         return false;
-      if (dist(x, y, sin(deg) * ofs, cos(deg) * ofs) < cs ||
-          dist(x, y, -sin(deg) * ofs, -cos(deg) * ofs) < cs)
+      const float degSin = sin(deg);
+      const float degCos = cos(deg);
+      if (dist(x, y, degSin * ofs, degCos * ofs) < cs ||
+          dist(x, y, -degSin * ofs, -degCos * ofs) < cs)
         return true;
     }
   }
@@ -529,7 +541,9 @@ public class ShieldShape: DrawableShape {
     glBegin(GL_LINE_LOOP);
     float d = 0;
     for (int i = 0; i < 8; i++) {
-      glVertex3f(sin(d), cos(d), 0);
+      const float dSin = sin(d);
+      const float dCos = cos(d);
+      glVertex3f(dSin, dCos, 0);
       d += PI / 4;
     }
     glEnd();
@@ -539,7 +553,9 @@ public class ShieldShape: DrawableShape {
     d = 0;
     Screen.setColor(0.3f, 0.3f, 0.5f);
     for (int i = 0; i < 9; i++) {
-      glVertex3f(sin(d), cos(d), 0);
+      const float dSin = sin(d);
+      const float dCos = cos(d);
+      glVertex3f(dSin, dCos, 0);
       d += PI / 4;
     }
     glEnd();

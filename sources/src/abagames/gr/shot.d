@@ -113,8 +113,10 @@ public class Shot: Actor {
       else
         sp = LANCE_SPEED;
     }
-    pos.x += sin(_deg) * sp;
-    pos.y += cos(_deg) * sp;
+    const float degSin = sin(_deg);
+    const float degCos = cos(_deg);
+    pos.x += degSin * sp;
+    pos.y += degCos * sp;
     pos.y -= field.lastScrollY;
     if (field.getBlock(pos) >= Field.ON_BLOCK_THRESHOLD ||
         !field.checkInOuterField(pos) || pos.y > field.size.y)
@@ -154,22 +156,30 @@ public class Shot: Actor {
         Smoke s = smokes.getInstanceForced();
         float d = _deg + rand.nextSignedFloat(0.1f);
         float sp = rand.nextFloat(LANCE_SPEED);
-        s.set(pos, sin(d) * sp, cos(d) * sp, 0,
+        const float dSin1 = sin(d);
+        const float dCos1 = cos(d);
+        s.set(pos, dSin1 * sp, dCos1 * sp, 0,
               Smoke.SmokeType.LANCE_SPARK, 30 + rand.nextInt(30), 1);
         s = smokes.getInstanceForced();
         d = _deg + rand.nextSignedFloat(0.1f);
         sp = rand.nextFloat(LANCE_SPEED);
-        s.set(pos, -sin(d) * sp, -cos(d) * sp, 0,
+        const float dSin2 = sin(d);
+        const float dCos2 = cos(d);
+        s.set(pos, -dSin2 * sp, -dCos2 * sp, 0,
               Smoke.SmokeType.LANCE_SPARK, 30 + rand.nextInt(30), 1);
       }
     } else {
       Spark s = sparks.getInstanceForced();
       float d = _deg + rand.nextSignedFloat(0.5f);
-      s.set(pos, sin(d) * SPEED, cos(d) * SPEED,
+      const float dSin3 = sin(d);
+      const float dCos3 = cos(d);
+      s.set(pos, dSin3 * SPEED, dCos3 * SPEED,
             0.6f + rand.nextSignedFloat(0.4f), 0.6f + rand.nextSignedFloat(0.4f), 0.1f, 20);
       s = sparks.getInstanceForced();
       d = _deg + rand.nextSignedFloat(0.5f);
-      s.set(pos, -sin(d) * SPEED, -cos(d) * SPEED,
+      const float dSin4 = sin(d);
+      const float dCos4 = cos(d);
+      s.set(pos, -dSin4 * SPEED, -dCos4 * SPEED,
             0.6f + rand.nextSignedFloat(0.4f), 0.6f + rand.nextSignedFloat(0.4f), 0.1f, 20);
     }
   }
@@ -179,6 +189,10 @@ public class Shot: Actor {
       float x = pos.x, y = pos.y;
       float size = 0.25f, a = 0.6f;
       int hc = hitCnt;
+      const float degSin = sin(_deg);
+      const float degCos = cos(_deg);
+      const float degSinSpeed = degSin * LANCE_SPEED * 2;
+      const float degCosSpeed = degCos * LANCE_SPEED * 2;
       for (int i = 0; i < cnt / 4 + 1; i++) {
         size *= 0.9f;
         a *= 0.8f;
@@ -209,8 +223,8 @@ public class Shot: Actor {
           glPopMatrix();
           d += 60;
         }
-        x -= sin(deg) * LANCE_SPEED * 2;
-        y -= cos(deg) * LANCE_SPEED * 2;
+        x -= degSinSpeed;
+        y -= degCosSpeed;
       }
     } else {
       glPushMatrix();
