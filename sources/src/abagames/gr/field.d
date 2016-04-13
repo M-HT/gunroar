@@ -31,9 +31,14 @@ public class Field {
   static const int ON_BLOCK_THRESHOLD = 1;
   static const int NEXT_BLOCK_AREA_SIZE = 16;
  private:
-  static const float SIDEWALL_X1 = 18;
   static const float SIDEWALL_X2 = 9.3f;
+version (PANDORA) {
+  static const float SIDEWALL_X1 = 13;
+  static const float SIDEWALL_Y = 10;
+} else {
+  static const float SIDEWALL_X1 = 18;
   static const float SIDEWALL_Y = 15;
+}
   static const float TIME_COLOR_INDEX = 5;
   static const float TIME_CHANGE_RATIO = 0.00033f;
   StageManager stageManager;

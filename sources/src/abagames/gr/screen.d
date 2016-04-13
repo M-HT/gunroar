@@ -60,7 +60,7 @@ public class Screen: Screen3D {
     setClearColor(0, 0, 0, 1);
     if (_luminosity > 0) {
       luminousScreen = new LuminousScreen;
-      luminousScreen.init(_luminosity, width, height);
+      luminousScreen.init(_luminosity, startx, starty, width, height);
     } else {
       luminousScreen = null;
     }
