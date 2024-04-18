@@ -5,12 +5,15 @@
  */
 module abagames.util.sdl.pad;
 
+version(PANDORA) version = PANDORA_OR_PYRA;
+version(PYRA) version = PANDORA_OR_PYRA;
+
 version (PANDORA) {
   private import std.conv;
 }
 private import std.string;
 private import std.stdio;
-private import SDL;
+private import bindbc.sdl;
 private import abagames.util.sdl.input;
 private import abagames.util.sdl.recordableinput;
 
@@ -19,7 +22,7 @@ private import abagames.util.sdl.recordableinput;
  */
 public class Pad: Input {
  public:
-  Uint8 *keys;
+  ubyte *keys;
   bool buttonReversed = false;
  private:
   SDL_Joystick *stick = null;
@@ -36,7 +39,7 @@ public class Pad: Input {
         return null;
       version (PANDORA) {
         foreach (i; 0..SDL_NumJoysticks()) {
-          if (to!string(SDL_JoystickName(i)) == "nub0") {
+          if (to!string(SDL_JoystickNameForIndex(i)) == "nub0") {
             stick = SDL_JoystickOpen(i);
           }
         }
@@ -50,7 +53,10 @@ public class Pad: Input {
   }
 
   public void handleEvent(SDL_Event *event) {
-    keys = SDL_GetKeyState(null);
+  }
+
+  public void handleEvents() {
+    keys = SDL_GetKeyboardState(null);
   }
 
   public PadState getState() {
@@ -60,45 +66,48 @@ public class Pad: Input {
       x = SDL_JoystickGetAxis(stick, 0);
       y = SDL_JoystickGetAxis(stick, 1);
     }
-    if (keys[SDLK_RIGHT] == SDL_PRESSED || keys[SDLK_KP6] == SDL_PRESSED ||
-        keys[SDLK_d] == SDL_PRESSED || keys[SDLK_l] == SDL_PRESSED ||
+    if (keys[SDL_SCANCODE_RIGHT] == SDL_PRESSED || keys[SDL_SCANCODE_KP_6] == SDL_PRESSED ||
+        keys[SDL_SCANCODE_D] == SDL_PRESSED || keys[SDL_SCANCODE_L] == SDL_PRESSED ||
         x > JOYSTICK_AXIS)
       state.dir |= PadState.Dir.RIGHT;
-    if (keys[SDLK_LEFT] == SDL_PRESSED || keys[SDLK_KP4] == SDL_PRESSED ||
-        keys[SDLK_a] == SDL_PRESSED || keys[SDLK_j] == SDL_PRESSED ||
+    if (keys[SDL_SCANCODE_LEFT] == SDL_PRESSED || keys[SDL_SCANCODE_KP_4] == SDL_PRESSED ||
+        keys[SDL_SCANCODE_A] == SDL_PRESSED || keys[SDL_SCANCODE_J] == SDL_PRESSED ||
         x < -JOYSTICK_AXIS)
       state.dir |= PadState.Dir.LEFT;
-    if (keys[SDLK_DOWN] == SDL_PRESSED || keys[SDLK_KP2] == SDL_PRESSED ||
-        keys[SDLK_s] == SDL_PRESSED || keys[SDLK_k] == SDL_PRESSED ||
+    if (keys[SDL_SCANCODE_DOWN] == SDL_PRESSED || keys[SDL_SCANCODE_KP_2] == SDL_PRESSED ||
+        keys[SDL_SCANCODE_S] == SDL_PRESSED || keys[SDL_SCANCODE_K] == SDL_PRESSED ||
         y > JOYSTICK_AXIS)
       state.dir |= PadState.Dir.DOWN;
-    if (keys[SDLK_UP] == SDL_PRESSED ||  keys[SDLK_KP8] == SDL_PRESSED ||
-        keys[SDLK_w] == SDL_PRESSED || keys[SDLK_i] == SDL_PRESSED ||
+    if (keys[SDL_SCANCODE_UP] == SDL_PRESSED ||  keys[SDL_SCANCODE_KP_8] == SDL_PRESSED ||
+        keys[SDL_SCANCODE_W] == SDL_PRESSED || keys[SDL_SCANCODE_I] == SDL_PRESSED ||
         y < -JOYSTICK_AXIS)
       state.dir |= PadState.Dir.UP;
     state.button = 0;
     bool btnx = false, btnz = false;
     int btn1 = 0, btn2 = 0;
     float leftTrigger = 0, rightTrigger = 0;
-    if (stick) {
-      btn1 = SDL_JoystickGetButton(stick, 0) + SDL_JoystickGetButton(stick, 3) +
-             SDL_JoystickGetButton(stick, 4) + SDL_JoystickGetButton(stick, 7) +
-             SDL_JoystickGetButton(stick, 8) + SDL_JoystickGetButton(stick, 11);
-      btn2 = SDL_JoystickGetButton(stick, 1) + SDL_JoystickGetButton(stick, 2) +
-             SDL_JoystickGetButton(stick, 5) + SDL_JoystickGetButton(stick, 6) +
-             SDL_JoystickGetButton(stick, 9) + SDL_JoystickGetButton(stick, 10);
-    }
-    version (PANDORA) {
-      if (keys[SDLK_HOME] == SDL_PRESSED || keys[SDLK_PAGEUP] == SDL_PRESSED) btnz = true;
-      if (keys[SDLK_PAGEDOWN] == SDL_PRESSED || keys[SDLK_END] == SDL_PRESSED) btnx = true;
+    version(PYRA) {
     } else {
-      if (keys[SDLK_z] == SDL_PRESSED || keys[SDLK_PERIOD] == SDL_PRESSED ||
-          keys[SDLK_LCTRL] == SDL_PRESSED || keys[SDLK_RCTRL] == SDL_PRESSED ||
+      if (stick) {
+        btn1 = SDL_JoystickGetButton(stick, 0) + SDL_JoystickGetButton(stick, 3) +
+               SDL_JoystickGetButton(stick, 4) + SDL_JoystickGetButton(stick, 7) +
+               SDL_JoystickGetButton(stick, 8) + SDL_JoystickGetButton(stick, 11);
+        btn2 = SDL_JoystickGetButton(stick, 1) + SDL_JoystickGetButton(stick, 2) +
+               SDL_JoystickGetButton(stick, 5) + SDL_JoystickGetButton(stick, 6) +
+               SDL_JoystickGetButton(stick, 9) + SDL_JoystickGetButton(stick, 10);
+      }
+    }
+    version (PANDORA_OR_PYRA) {
+      if (keys[SDL_SCANCODE_HOME] == SDL_PRESSED || keys[SDL_SCANCODE_PAGEUP] == SDL_PRESSED) btnz = true;
+      if (keys[SDL_SCANCODE_PAGEDOWN] == SDL_PRESSED || keys[SDL_SCANCODE_END] == SDL_PRESSED) btnx = true;
+    } else {
+      if (keys[SDL_SCANCODE_Z] == SDL_PRESSED || keys[SDL_SCANCODE_PERIOD] == SDL_PRESSED ||
+          keys[SDL_SCANCODE_LCTRL] == SDL_PRESSED || keys[SDL_SCANCODE_RCTRL] == SDL_PRESSED ||
           btn1) btnz = true;
-      if (keys[SDLK_x] == SDL_PRESSED || keys[SDLK_SLASH] == SDL_PRESSED ||
-          keys[SDLK_LALT] == SDL_PRESSED || keys[SDLK_RALT] == SDL_PRESSED ||
-          keys[SDLK_LSHIFT] == SDL_PRESSED || keys[SDLK_RSHIFT] == SDL_PRESSED ||
-          keys[SDLK_RETURN] == SDL_PRESSED ||
+      if (keys[SDL_SCANCODE_X] == SDL_PRESSED || keys[SDL_SCANCODE_SLASH] == SDL_PRESSED ||
+          keys[SDL_SCANCODE_LALT] == SDL_PRESSED || keys[SDL_SCANCODE_RALT] == SDL_PRESSED ||
+          keys[SDL_SCANCODE_LSHIFT] == SDL_PRESSED || keys[SDL_SCANCODE_RSHIFT] == SDL_PRESSED ||
+          keys[SDL_SCANCODE_RETURN] == SDL_PRESSED ||
           btn2) btnx = true;
     }
     if (btnz) {

@@ -10,6 +10,7 @@ private import std.string;
 private import core.stdc.string;
 private import opengl;
 private import abagames.util.actor;
+private import abagames.util.sdl.screen;
 
 /**
  * Luminous effect texture.
@@ -23,14 +24,14 @@ public class LuminousScreen {
   const int LUMINOUS_TEXTURE_HEIGHT_MAX = 64;
   GLuint[LUMINOUS_TEXTURE_WIDTH_MAX * LUMINOUS_TEXTURE_HEIGHT_MAX * 4 * uint.sizeof] td;
   int luminousTextureWidth = 64, luminousTextureHeight = 64;
-  int screenStartX, screenStartY, screenWidth, screenHeight;
+  int screenWidth, screenHeight;
   float luminosity;
+  SizableScreen screen;
 
-  public void init(float luminosity, int startX, int startY, int width, int height) {
-    screenStartX = startX;
-    screenStartY = startY;
+  public void init(float luminosity, int width, int height, SizableScreen screen) {
     makeLuminousTexture();
     this.luminosity = luminosity;
+    this.screen = screen;
     resized(width, height);
   }
 
@@ -40,7 +41,7 @@ public class LuminousScreen {
     memset(data, 0, luminousTextureWidth * luminousTextureHeight * 4 * uint.sizeof);
     glGenTextures(1, &luminousTexture);
     glBindTexture(GL_TEXTURE_2D, luminousTexture);
-    glTexImage2D(GL_TEXTURE_2D, 0, 4, luminousTextureWidth, luminousTextureHeight, 0,
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, luminousTextureWidth, luminousTextureHeight, 0,
 		 GL_RGBA, GL_UNSIGNED_BYTE, data);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -61,9 +62,9 @@ public class LuminousScreen {
 
   public void endRender() {
     glBindTexture(GL_TEXTURE_2D, luminousTexture);
-    glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,
+    glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGB,
                      0, 0, luminousTextureWidth, luminousTextureHeight, 0);
-    glViewport(screenStartX, screenStartY, screenWidth, screenHeight);
+    glViewport(screen.screenStartX, screen.screenStartY, screen.screenWidth, screen.screenHeight);
   }
 
   private void viewOrtho() {

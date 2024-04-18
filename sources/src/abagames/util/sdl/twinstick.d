@@ -5,13 +5,16 @@
  */
 module abagames.util.sdl.twinstick;
 
+version(PANDORA) version = PANDORA_OR_PYRA;
+version(PYRA) version = PANDORA_OR_PYRA;
+
 version (PANDORA) {
   private import std.conv;
 }
 private import std.string;
 private import std.stdio;
 private import std.math;
-private import SDL;
+private import bindbc.sdl;
 private import abagames.util.vector;
 private import abagames.util.sdl.input;
 private import abagames.util.sdl.recordableinput;
@@ -23,7 +26,7 @@ public class TwinStick: Input {
  public:
   float rotate = 0;
   float reverse = 1;
-  Uint8 *keys;
+  ubyte *keys;
   bool enableAxis5 = false;
  private:
   SDL_Joystick *stick = null;
@@ -43,7 +46,7 @@ version (PANDORA) {
         return null;
       version (PANDORA) {
         foreach (i; 0..SDL_NumJoysticks()) {
-          if (to!string(SDL_JoystickName(i)) == "nub0") {
+          if (to!string(SDL_JoystickNameForIndex(i)) == "nub0") {
             stick = SDL_JoystickOpen(i);
           }
         }
@@ -55,7 +58,7 @@ version (PANDORA) {
     }
     version (PANDORA) {
       foreach (i; 0..SDL_NumJoysticks()) {
-        if (to!string(SDL_JoystickName(i)) == "nub1") {
+        if (to!string(SDL_JoystickNameForIndex(i)) == "nub1") {
           stick2 = SDL_JoystickOpen(i);
         }
       }
@@ -64,7 +67,10 @@ version (PANDORA) {
   }
 
   public void handleEvent(SDL_Event *event) {
-    keys = SDL_GetKeyState(null);
+  }
+
+  public void handleEvents() {
+    keys = SDL_GetKeyboardState(null);
   }
 
   public TwinStickState getState() {
@@ -98,40 +104,40 @@ version (PANDORA) {
     } else {
       state.left.x = state.left.y = state.right.x = state.right.y = 0;
     }
-    version (PANDORA) {
-      if (keys[SDLK_RIGHT] == SDL_PRESSED)
+    version (PANDORA_OR_PYRA) {
+      if (keys[SDL_SCANCODE_RIGHT] == SDL_PRESSED)
         state.left.x = 1;
-      if (keys[SDLK_LEFT] == SDL_PRESSED)
+      if (keys[SDL_SCANCODE_LEFT] == SDL_PRESSED)
         state.left.x = -1;
-      if (keys[SDLK_DOWN] == SDL_PRESSED)
+      if (keys[SDL_SCANCODE_DOWN] == SDL_PRESSED)
         state.left.y = -1;
-      if (keys[SDLK_UP] == SDL_PRESSED)
+      if (keys[SDL_SCANCODE_UP] == SDL_PRESSED)
         state.left.y = 1;
 
-      if (keys[SDLK_END] == SDL_PRESSED)
+      if (keys[SDL_SCANCODE_END] == SDL_PRESSED)
         state.right.x = 1;
-      if (keys[SDLK_HOME] == SDL_PRESSED)
+      if (keys[SDL_SCANCODE_HOME] == SDL_PRESSED)
         state.right.x = -1;
-      if (keys[SDLK_PAGEDOWN] == SDL_PRESSED)
+      if (keys[SDL_SCANCODE_PAGEDOWN] == SDL_PRESSED)
         state.right.y = -1;
-      if (keys[SDLK_PAGEUP] == SDL_PRESSED)
+      if (keys[SDL_SCANCODE_PAGEUP] == SDL_PRESSED)
         state.right.y = 1;
     } else {
-      if (keys[SDLK_d] == SDL_PRESSED)
+      if (keys[SDL_SCANCODE_D] == SDL_PRESSED)
         state.left.x = 1;
-      if (keys[SDLK_l] == SDL_PRESSED)
+      if (keys[SDL_SCANCODE_L] == SDL_PRESSED)
         state.right.x = 1;
-      if (keys[SDLK_a] == SDL_PRESSED)
+      if (keys[SDL_SCANCODE_A] == SDL_PRESSED)
         state.left.x = -1;
-      if (keys[SDLK_j] == SDL_PRESSED)
+      if (keys[SDL_SCANCODE_J] == SDL_PRESSED)
         state.right.x = -1;
-      if (keys[SDLK_s] == SDL_PRESSED)
+      if (keys[SDL_SCANCODE_S] == SDL_PRESSED)
         state.left.y = -1;
-      if (keys[SDLK_k] == SDL_PRESSED)
+      if (keys[SDL_SCANCODE_K] == SDL_PRESSED)
         state.right.y = -1;
-      if (keys[SDLK_w] == SDL_PRESSED)
+      if (keys[SDL_SCANCODE_W] == SDL_PRESSED)
         state.left.y = 1;
-      if (keys[SDLK_i] == SDL_PRESSED)
+      if (keys[SDL_SCANCODE_I] == SDL_PRESSED)
         state.right.y = 1;
     }
     return state;

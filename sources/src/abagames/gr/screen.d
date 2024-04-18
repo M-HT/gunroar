@@ -60,7 +60,7 @@ public class Screen: Screen3D {
     setClearColor(0, 0, 0, 1);
     if (_luminosity > 0) {
       luminousScreen = new LuminousScreen;
-      luminousScreen.init(_luminosity, startx, starty, width, height);
+      luminousScreen.init(_luminosity, width, height, this);
     } else {
       luminousScreen = null;
     }
@@ -91,13 +91,13 @@ public class Screen: Screen3D {
 
   public override void resized(int width, int height) {
     if (luminousScreen)
-      luminousScreen.resized(width, height);
+      luminousScreen.resized(this.width, this.height);
     super.resized(width, height);
   }
 
   public override void screenResized() {
     super.screenResized();
-    float lw = (cast(float) width / 640 + cast(float) height / 480) / 2;
+    float lw = (cast(float) screenWidth / 640 + cast(float) screenHeight / 480) / 2;
     if (lw < 1)
       lw = 1;
     else if (lw > 4)

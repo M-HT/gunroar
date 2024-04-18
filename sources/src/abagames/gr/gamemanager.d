@@ -7,7 +7,7 @@ module abagames.gr.gamemanager;
 
 private import std.math;
 private import opengl;
-private import SDL;
+private import bindbc.sdl;
 private import abagames.util.vector;
 private import abagames.util.rand;
 private import abagames.util.sdl.gamemanager;
@@ -92,9 +92,10 @@ public class GameManager: abagames.util.sdl.gamemanager.GameManager {
     screen = cast(Screen) abstScreen;
     pad = cast(Pad) (cast(MultipleInputDevice) input).inputs[0];
     twinStick = cast(TwinStick) (cast(MultipleInputDevice) input).inputs[1];
-    twinStick.openJoystick(pad.openJoystick());
+    SDL_Joystick *stick = pad.openJoystick();
+    twinStick.openJoystick(stick);
     mouse = cast(Mouse) (cast(MultipleInputDevice) input).inputs[2];
-    mouse.init(screen);
+    mouse.init(screen, stick);
     mouseAndPad = new RecordableMouseAndPad(mouse, pad);
     field = new Field;
     Object[] pargs;
@@ -238,7 +239,7 @@ public class GameManager: abagames.util.sdl.gamemanager.GameManager {
   }
 
   public override void move() {
-    if (pad.keys[SDLK_ESCAPE] == SDL_PRESSED) {
+    if (pad.keys[SDL_SCANCODE_ESCAPE] == SDL_PRESSED) {
       if (!escPressed) {
         escPressed = true;
         if (state == inGameState) {
@@ -255,12 +256,6 @@ public class GameManager: abagames.util.sdl.gamemanager.GameManager {
   }
 
   public override void draw() {
-    SDL_Event e = mainLoop.event;
-    if (e.type == SDL_VIDEORESIZE) {
-      SDL_ResizeEvent re = e.resize;
-      if (re.w > 150 && re.h > 100)
-        screen.resized(re.w, re.h);
-   }
    if (screen.startRenderToLuminousScreen()) {
       glPushMatrix();
       screen.setEyepos();
@@ -491,7 +486,7 @@ public class InGameState: GameState {
   }
 
   public override void move() {
-    if (pad.keys[SDLK_p] == SDL_PRESSED) {
+    if (pad.keys[SDL_SCANCODE_P] == SDL_PRESSED) {
       if (!pausePressed) {
         if (pauseCnt <= 0 && !isGameOver)
           pauseCnt = 1;

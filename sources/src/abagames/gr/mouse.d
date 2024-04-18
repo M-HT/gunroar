@@ -23,7 +23,7 @@ public class RecordableMouse: abagames.util.sdl.mouse.RecordableMouse {
   }
 
   protected override void adjustPos(MouseState ms) {
-    ms.x =  (ms.x - screen.width  / 2) * MOUSE_SCREEN_MAPPING_RATIO_X / screen.width;
-    ms.y = -(ms.y - screen.height / 2) * MOUSE_SCREEN_MAPPING_RATIO_Y / screen.height;
+    ms.x =  (ms.x - screen.screenWidth  / 2) * MOUSE_SCREEN_MAPPING_RATIO_X / screen.screenWidth;
+    ms.y = -(ms.y - screen.screenHeight / 2) * MOUSE_SCREEN_MAPPING_RATIO_Y / screen.screenHeight;
   }
 }

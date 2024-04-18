@@ -13,8 +13,8 @@ Rank multiplier (displayed in the upper right) is a bonus multiplier that increa
 Boss appearance timer (displayed in the upper left) is a remaining time before a boss ship appears.
 <hr/>
 
-The game was created by Kenta Cho (http://www.asahi-net.or.jp/~cs8k-cyu/windows/gr_e.html) and released with BSD 2-Clause License. (See readme.txt/readme_e.txt)
+The game was created by [Kenta Cho](https://www.asahi-net.or.jp/~cs8k-cyu/windows/gr_e.html "Kenta Cho - Gunroar") and released with BSD 2-Clause License. (See readme.txt/readme_e.txt)
 
-This fork is a port to D version 2, Pandora. It also contains an OpenGL ES branch.
+This fork is a port to D version 2, Linux, SDL2, Pandora, DragonBox Pyra.
 
-The Pandora release is based on OpenGL ES branch, but it also works in master branch (OpenGL) using ptitSeb's fork of glshim - https://github.com/ptitSeb/glshim
+It uses [BindBC-SDL](https://github.com/BindBC/bindbc-sdl "BindBC-SDL") (D bindings to SDL), which is under [Boost Software License](https://www.boost.org/LICENSE_1_0.txt "Boost Software License").
