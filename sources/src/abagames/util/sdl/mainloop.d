@@ -97,7 +97,7 @@ public class MainLoop {
         if (accframe) {
           prvTickCount = SDL_GetTicks();
         } else {
-          prvTickCount += interval;
+          prvTickCount += cast(long) interval;
         }
       } else if (frame > maxSkipFrame) {
         frame = maxSkipFrame;

@@ -52,8 +52,8 @@ public class Turret {
   invariant() {
     assert(pos.x < 15 && pos.x > -15);
     assert(pos.y < 60 && pos.y > -40);
-    assert(deg <>= 0);
-    assert(baseDeg <>= 0);
+    assert(!std.math.isNaN(deg));
+    assert(!std.math.isNaN(baseDeg));
     assert(bulletSpeed > 0);
   }
 
@@ -122,7 +122,7 @@ public class Turret {
       ad = 0;
     else
       ad = atan2(ax, ay);
-    assert(ad <>= 0);
+    assert(!std.math.isNaN(ad));
     float od = td - ad;
     Math.normalizeDeg(od);
     float ts;
@@ -487,7 +487,7 @@ public class TurretSpec {
       if (sr < 0)
         sr = 0;
       speed = sqrt(sr * 0.6f);
-      assert(speed <>= 0);
+      assert(!std.math.isNaN(speed));
       speed *= 0.12f;
       shield = 20;
       break;
@@ -503,7 +503,7 @@ public class TurretSpec {
       if (sr < 0)
         sr = 0;
       speed = sqrt(sr * 0.7f);
-      assert(speed <>= 0);
+      assert(!std.math.isNaN(speed));
       speed *= 0.2f;
       shield = 12;
       break;
@@ -515,14 +515,14 @@ public class TurretSpec {
       burstNum = cast(int) br * 2 + 1;
       nway = cast(int) (nr * 0.66f + 1);
       interval = cast(int) (60.0f / (ir * 2 + 1)) + 1;
-      burstInterval *= 0.88f;
+      burstInterval = cast(int) (burstInterval * 0.88f);
       bulletShape = BulletShape.BulletShapeType.DESTRUCTIVE;
       bulletDestructive = true;
       float sr = rk - (burstNum - 1) / 2 - (nway - 1) / 0.66f - ir;
       if (sr < 0)
         sr = 0;
       speed = sqrt(sr * 0.7f);
-      assert(speed <>= 0);
+      assert(!std.math.isNaN(speed));
       speed *= 0.33f;
       shield = 12;
       break;
@@ -537,7 +537,7 @@ public class TurretSpec {
       if (sr < 0)
         sr = 0;
       speed = sqrt(sr);
-      assert(speed <>= 0);
+      assert(!std.math.isNaN(speed));
       speed *= 0.24f;
       break;
     case TurretType.MOVING:
@@ -552,7 +552,7 @@ public class TurretSpec {
       if (sr < 0)
         sr = 0;
       speed = sqrt(sr * 0.7f);
-      assert(speed <>= 0);
+      assert(!std.math.isNaN(speed));
       speed *= 0.2f;
       break;
     default:
@@ -562,11 +562,11 @@ public class TurretSpec {
       speed = 0.1f;
     else
       speed = sqrt(speed * 10) / 10;
-    assert(speed <>= 0);
+    assert(!std.math.isNaN(speed));
     if (burstNum > 2) {
       if (rand.nextInt(4) == 0) {
         speed *= 0.8f;
-        burstInterval *= 0.7f;
+        burstInterval = cast(int) (burstInterval * 0.7f);
         speedAccel = (speed * (0.4f + rand.nextFloat(0.3f))) / burstNum;
         if (rand.nextInt(2) == 0)
           speedAccel *= -1;
@@ -583,7 +583,7 @@ public class TurretSpec {
   public void setBossSpec() {
     minRange = 0;
     maxRange *= 1.5f;
-    shield *= 2.1f;
+    shield = cast(int) (shield * 2.1f);
   }
 
   public float size() {
@@ -669,7 +669,7 @@ public class TurretGroup {
         tbx = spec.offset.x;
         tby = y;
         d = atan2(tbx, tby);
-        assert(d <>= 0);
+        assert(!std.math.isNaN(d));
         break;
       default:
         break;
@@ -721,8 +721,8 @@ public class TurretGroupSpec {
 
   invariant() {
     assert(num >= 1 && num < 20);
-    assert(alignDeg <>= 0);
-    assert(alignWidth <>= 0);
+    assert(!std.math.isNaN(alignDeg));
+    assert(!std.math.isNaN(alignWidth));
     assert(radius >= 0);
     assert(distRatio >= 0 && distRatio <= 1);
     assert(offset.x < 10 && offset.x > -10);
@@ -770,15 +770,15 @@ public class MovingTurretGroup {
 
   invariant() {
     assert(radius > -10);
-    assert(radiusAmpCnt <>= 0);
-    assert(deg <>= 0);
-    assert(rollAmpCnt <>= 0);
-    assert(swingAmpCnt <>= 0);
-    assert(swingAmpDeg <>= 0);
-    assert(swingFixDeg <>= 0);
-    assert(alignAmpCnt <>= 0);
-    assert(distDeg <>= 0);
-    assert(distAmpCnt <>= 0);
+    assert(!std.math.isNaN(radiusAmpCnt));
+    assert(!std.math.isNaN(deg));
+    assert(!std.math.isNaN(rollAmpCnt));
+    assert(!std.math.isNaN(swingAmpCnt));
+    assert(!std.math.isNaN(swingAmpDeg));
+    assert(!std.math.isNaN(swingFixDeg));
+    assert(!std.math.isNaN(alignAmpCnt));
+    assert(!std.math.isNaN(distDeg));
+    assert(!std.math.isNaN(distAmpCnt));
     assert(centerPos.x < 15 && centerPos.x > -15);
     assert(centerPos.y < 60 && centerPos.y > -40);
   }
@@ -842,7 +842,7 @@ public class MovingTurretGroup {
           od = 0;
         else
           od = atan2(shipPos.x - centerPos.x, shipPos.y - centerPos.y);
-        assert(od <>= 0);
+        assert(!std.math.isNaN(od));
         od += swingAmpDeg - deg;
         Math.normalizeDeg(od);
         deg += od * 0.1f;
@@ -867,7 +867,7 @@ public class MovingTurretGroup {
       } else {
         fs = sqrt(bx * bx + by * by);
         fd = atan2(bx, by);
-        assert(fd <>= 0);
+        assert(!std.math.isNaN(fd));
       }
       fs *= 0.06f;
       turret[i].move(centerPos.x, centerPos.y, d, fs, fd);
@@ -925,18 +925,18 @@ public class MovingTurretGroupSpec {
 
   invariant() {
     assert(num >= 1);
-    assert(alignDeg <>= 0);
-    assert(alignAmp <>= 0);
-    assert(alignAmpVel <>= 0);
-    assert(radiusBase <>= 0);
-    assert(radiusAmp <>= 0);
-    assert(radiusAmpVel <>= 0);
-    assert(rollDegVel <>= 0);
-    assert(rollAmp <>= 0);
-    assert(rollAmpVel <>= 0);
-    assert(swingDegVel <>= 0);
-    assert(swingAmpVel <>= 0);
-    assert(distRatio <>= 0);
+    assert(!std.math.isNaN(alignDeg));
+    assert(!std.math.isNaN(alignAmp));
+    assert(!std.math.isNaN(alignAmpVel));
+    assert(!std.math.isNaN(radiusBase));
+    assert(!std.math.isNaN(radiusAmp));
+    assert(!std.math.isNaN(radiusAmpVel));
+    assert(!std.math.isNaN(rollDegVel));
+    assert(!std.math.isNaN(rollAmp));
+    assert(!std.math.isNaN(rollAmpVel));
+    assert(!std.math.isNaN(swingDegVel));
+    assert(!std.math.isNaN(swingAmpVel));
+    assert(!std.math.isNaN(distRatio));
     assert(xReverse == 1 || xReverse == -1);
 
   }

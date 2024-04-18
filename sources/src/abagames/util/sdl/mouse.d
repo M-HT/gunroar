@@ -128,19 +128,19 @@ public class MouseState {
   }
 
   public void read(File fd) {
-    float read_data[2];
+    float[2] read_data;
     fd.rawRead(read_data);
     x = read_data[0];
     y = read_data[1];
-    int read_data2[1];
+    int[1] read_data2;
     fd.rawRead(read_data2);
     button = read_data2[0];
   }
 
   public void write(File fd) {
-    float write_data[2] = [x, y];
+    float[2] write_data = [x, y];
     fd.rawWrite(write_data);
-    int write_data2[1] = [button];
+    int[1] write_data2 = [button];
     fd.rawWrite(write_data2);
   }
 

@@ -172,9 +172,8 @@ public class EnemyState {
     assert(pos.y < 60 && pos.y > -30);
     assert(ppos.x < 15 && ppos.x > -15);
     assert(ppos.y < 60 && ppos.y > -30);
-    assert(shield <>= 0);
-    assert(deg <>= 0);
-    assert(velDeg <>= 0);
+    assert(!std.math.isNaN(deg));
+    assert(!std.math.isNaN(velDeg));
     assert(speed < 10 && speed > -10);
     assert(turnWay == 1 || turnWay == -1);
     assert(trgDeg <= 1 && trgDeg >= -1);
@@ -398,7 +397,7 @@ public class EnemyState {
       sn = spec.size;
     else
       sn = sqrt(spec.size);
-    assert(sn <>= 0);
+    assert(!std.math.isNaN(sn));
     if (sn > 3)
       sn = 3;
     for (int i = 0; i < sn * 8; i++) {
@@ -498,7 +497,7 @@ public class EnemyState {
       Smoke s = smokes.getInstanceForced();
       float sr = rand.nextFloat(0.5f);
       float sd = spd[si] + rand.nextSignedFloat(0.2f);
-      assert(sd <>= 0);
+      assert(!std.math.isNaN(sd));
       const float sdSin = sin(sd);
       const float sdCos = cos(sd);
       s.set(edgePos, sdSin * sr, sdCos * sr, -0.004f,
@@ -970,7 +969,7 @@ public class SmallShipEnemySpec: EnemySpec, HasAppearType {
         ad = 0;
       else
         ad = atan2(shipPos.x - es.pos.x, shipPos.y - es.pos.y);
-      assert(ad <>= 0);
+      assert(!std.math.isNaN(ad));
       float od = ad - es.velDeg;
       Math.normalizeDeg(od);
       if (od <= turnDeg && od >= -turnDeg)
@@ -981,6 +980,7 @@ public class SmallShipEnemySpec: EnemySpec, HasAppearType {
         es.velDeg += turnDeg;
       Math.normalizeDeg(es.velDeg);
       es.cnt++;
+      break;
     default:
       break;
     }
@@ -1096,7 +1096,7 @@ public class ShipEnemySpec: EnemySpec, HasAppearType {
     }
     shield = cast(int) (size * 10);
     if (cls == ShipClass.BOSS)
-      shield *= 2.4f;
+      shield = cast(int) (shield * 2.4f);
     if (mainTurretNum + subTurretNum <= 0) {
       TurretGroupSpec tgs = getTurretGroupSpec();
       tgs.turretSpec.setParam(0, TurretSpec.TurretType.DUMMY, rand);

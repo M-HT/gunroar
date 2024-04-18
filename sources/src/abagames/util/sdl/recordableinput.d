@@ -98,7 +98,7 @@ public class InputRecord(T) {
   }
 
   public void save(File fd) {
-    int write_data[1] = [cast(int)(record.length)];
+    int[1] write_data = [cast(int)(record.length)];
     fd.rawWrite(write_data);
     foreach (Record r; record) {
       write_data[0] = r.series;
@@ -111,7 +111,7 @@ public class InputRecord(T) {
     clear();
     int l, s;
     T d;
-    int read_data[1];
+    int[1] read_data;
     fd.rawRead(read_data);
     l = read_data[0];
     for (int i = 0; i < l; i++) {

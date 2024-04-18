@@ -313,14 +313,14 @@ public class Smoke: LuminousActor {
         float sp = sqrt(vel.x * vel.x + vel.y * vel.y);
         if (sp > 0.3f) {
           float d = atan2(vel.x, vel.y);
-          assert(d <>= 0);
+          assert(!std.math.isNaN(d));
           const float dSin1 = sin(d + cast(float)(PI / 2));
           const float dCos1 = cos(d + cast(float)(PI / 2));
           wakePos.x = pos.x + dSin1 * size * 0.25f;
           wakePos.y = pos.y + dCos1 * size * 0.25f;
           Wake w = wakes.getInstanceForced();
-          assert(wakePos.x <>= 0);
-          assert(wakePos.y <>= 0);
+          assert(!std.math.isNaN(wakePos.x));
+          assert(!std.math.isNaN(wakePos.y));
           w.set(wakePos, d + PI - 0.2f + rand.nextSignedFloat(0.1f), sp * 0.33f,
                 20 + rand.nextInt(12), size * (7.0f + rand.nextFloat(3)));
           const float dSin2 = sin(d - cast(float)(PI / 2));
@@ -328,8 +328,8 @@ public class Smoke: LuminousActor {
           wakePos.x = pos.x + dSin2 * size * 0.25f;
           wakePos.y = pos.y + dCos2 * size * 0.25f;
           w = wakes.getInstanceForced();
-          assert(wakePos.x <>= 0);
-          assert(wakePos.y <>= 0);
+          assert(!std.math.isNaN(wakePos.x));
+          assert(!std.math.isNaN(wakePos.y));
           w.set(wakePos, d + PI + 0.2f + rand.nextSignedFloat(0.1f), sp * 0.33f,
                 20 + rand.nextInt(12), size * (7.0f + rand.nextFloat(3)));
         }
@@ -386,8 +386,8 @@ public class Fragment: Actor {
     assert(vel.y < 10 && vel.y > -10);
     assert(vel.z < 10 && vel.z > -10);
     assert(size >= 0 && size < 10);
-    assert(d2 <>= 0);
-    assert(md2 <>= 0);
+    assert(!std.math.isNaN(d2));
+    assert(!std.math.isNaN(md2));
   }
 
   public static void init() {
@@ -510,8 +510,8 @@ public class SparkFragment: LuminousActor {
     assert(vel.y < 10 && vel.y > -10);
     assert(vel.z < 10 && vel.z > -10);
     assert(size >= 0 && size < 10);
-    assert(d2 <>= 0);
-    assert(md2 <>= 0);
+    assert(!std.math.isNaN(d2));
+    assert(!std.math.isNaN(md2));
     assert(cnt >= 0);
   }
 
@@ -646,7 +646,7 @@ public class Wake: Actor {
     assert(vel.x < 10 && vel.x > -10);
     assert(vel.y < 10 && vel.y > -10);
     assert(size > 0 && size < 1000);
-    assert(deg <>= 0);
+    assert(!std.math.isNaN(deg));
     assert(speed >= 0 && speed < 10);
     assert(cnt >= 0);
   }

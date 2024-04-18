@@ -49,8 +49,8 @@ public class StageManager {
     assert(rank >= 1);
     assert(baseRank >= 1);
     assert(addRank >= 0);
-    assert(rankVel <>= 0);
-    assert(rankInc <>= 0);
+    assert(!std.math.isNaN(rankVel));
+    assert(!std.math.isNaN(rankInc));
     assert(_blockDensity >= BLOCK_DENSITY_MIN && _blockDensity <= BLOCK_DENSITY_MAX);
     assert(batteryNum >= 0 && batteryNum < 50);
   }
@@ -185,9 +185,9 @@ public class StageManager {
     float tr = rank;
     int largeShipNum = cast(int) ((2 - _blockDensity + rand.nextSignedFloat(1)) * 0.5f);
     if (noSmallShip)
-      largeShipNum *= 1.5f;
+      largeShipNum = cast(int) (largeShipNum * 1.5f);
     else
-      largeShipNum *= 0.5f;
+      largeShipNum = cast(int) (largeShipNum * 0.5f);
     int appType = rand.nextInt(2);
     if (largeShipNum > 0) {
       float lr = tr * (0.25f + rand.nextFloat(0.15f));
@@ -299,7 +299,7 @@ public class EnemyAppearance {
   int appType;
 
   invariant() {
-    assert(nextAppDist <>= 0);
+    assert(!std.math.isNaN(nextAppDist));
     assert(nextAppDistInterval > 0);
     assert(appType >= 0);
   }

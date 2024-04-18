@@ -160,14 +160,14 @@ public class PadState {
   }
 
   public void read(File fd) {
-    int read_data[1];
+    int[1] read_data;
     fd.rawRead(read_data);
     dir = read_data[0] & (Dir.UP | Dir.DOWN | Dir.LEFT | Dir.RIGHT);
     button = read_data[0] & Button.ANY;
   }
 
   public void write(File fd) {
-    int write_data[1] = [dir | button];
+    int[1] write_data = [dir | button];
     fd.rawWrite(write_data);
   }
 

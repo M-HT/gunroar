@@ -9,7 +9,7 @@ private import std.string;
 //private import std.stream;
 private import std.conv;
 private import std.math;
-private import std.c.stdlib;
+private import core.stdc.stdlib;
 private import abagames.util.logger;
 private import abagames.util.tokenizer;
 private import abagames.util.sdl.mainloop;
@@ -57,7 +57,7 @@ version (Win32_release) {
     _minit();
     try {
       _moduleCtor();
-      char exe[4096];
+      char[4096] exe;
       GetModuleFileNameA(null, exe, 4096);
       string[1] prog;
       prog[0] = to!string(exe);

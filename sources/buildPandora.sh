@@ -1,6 +1,6 @@
 #!/bin/sh
 
-FLAGS="-fversion=PANDORA -frelease -fno-section-anchors -c -O2 -pipe"
+FLAGS="-fversion=PANDORA -frelease -fno-section-anchors -c -O2 -Wall -pipe"
 
 rm import/*.o*
 rm src/abagames/util/*.o*

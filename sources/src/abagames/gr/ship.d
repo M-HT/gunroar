@@ -337,12 +337,12 @@ public class Boat {
     assert(_pos.y < 20 && _pos.y > -20);
     assert(firePos.x < 15 && firePos.x > -15);
     assert(firePos.y < 20 && firePos.y > -20);
-    assert(deg <>= 0);
+    assert(!std.math.isNaN(deg));
     assert(speed >= 0 && speed <= SPEED_BASE);
     assert(turnRatio >= 0 && turnRatio <= TURN_RATIO_BASE);
     assert(turnSpeed >= 0);
     assert(fireInterval >= FIRE_INTERVAL);
-    assert(fireSprDeg <>= 0);
+    assert(!std.math.isNaN(fireSprDeg));
     assert(cnt >= -RESTART_CNT);
     assert(_vel.x < 2 && _vel.x > -2);
     assert(_vel.y < 2 && _vel.y > -2);
@@ -531,7 +531,7 @@ public class Boat {
       refVel.y = 0;
     }
     if (field.getBlock(_pos.x, _pos.y) >= 0) {
-      if (!onBlock)
+      if (!onBlock) {
         if (cnt <= 0)
           onBlock = true;
         else {
@@ -542,6 +542,7 @@ public class Boat {
             destroyed();
           }
         }
+      }
     } else {
       onBlock = false;
     }
@@ -578,7 +579,7 @@ public class Boat {
         rd = 0;
       else
         rd = atan2(_pos.x - he.pos.x, _pos.y - he.pos.y);
-      assert(rd <>= 0);
+      assert(!std.math.isNaN(rd));
       float sz = he.size;
       const float rdSin = sin(rd);
       const float rdCos = cos(rd);
@@ -621,7 +622,7 @@ public class Boat {
     }
     if (vx != 0 || vy != 0) {
       float ad = atan2(vx, vy);
-      assert(ad <>= 0);
+      assert(!std.math.isNaN(ad));
       Math.normalizeDeg(ad);
       ad -= deg;
       Math.normalizeDeg(ad);
@@ -647,7 +648,7 @@ public class Boat {
     vy = stickInput.left.y;
     if (vx != 0 || vy != 0) {
       float ad = atan2(vx, vy);
-      assert(ad <>= 0);
+      assert(!std.math.isNaN(ad));
       Math.normalizeDeg(ad);
       ad -= deg;
       Math.normalizeDeg(ad);
@@ -683,7 +684,7 @@ public class Boat {
     }
     if (vx != 0 || vy != 0) {
       float ad = atan2(vx, vy);
-      assert(ad <>= 0);
+      assert(!std.math.isNaN(ad));
       Math.normalizeDeg(ad);
       ad -= deg;
       Math.normalizeDeg(ad);
@@ -726,7 +727,7 @@ public class Boat {
     }
     if (vx != 0 || vy != 0) {
       float ad = atan2(vx, vy);
-      assert(ad <>= 0);
+      assert(!std.math.isNaN(ad));
       Math.normalizeDeg(ad);
       ad -= deg;
       Math.normalizeDeg(ad);
@@ -818,7 +819,7 @@ public class Boat {
   private void fireTwinStick() {
     if (fabs(stickInput.right.x) + fabs(stickInput.right.y) > 0.01f) {
       fireDeg = atan2(stickInput.right.x, stickInput.right.y);
-      assert(fireDeg <>= 0);
+      assert(!std.math.isNaN(fireDeg));
       if (fireCnt <= 0) {
         SoundManager.playSe("shot.wav");
         int foc = (fireSprCnt % 2) * 2 - 1;
@@ -935,7 +936,7 @@ public class Boat {
     if (fabs(foy) < 0.01f)
       foy = 0.01f;
     fireDeg = atan2(fox, foy);
-    assert(fireDeg <>= 0);
+    assert(!std.math.isNaN(fireDeg));
     if (mouseInput.button & (MouseState.Button.LEFT | MouseState.Button.RIGHT)) {
       if (fireCnt <= 0) {
         SoundManager.playSe("shot.wav");

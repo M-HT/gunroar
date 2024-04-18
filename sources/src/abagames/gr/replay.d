@@ -32,9 +32,9 @@ public class ReplayData {
 
   public void save(string fileName) {
     scope File fd;
-    int write_data_int[1];
-    long write_data_long[1];
-    float write_data_float[1];
+    int[1] write_data_int;
+    long[1] write_data_long;
+    float[1] write_data_float;
     fd.open(dir ~ "/" ~ fileName, "wb");
     write_data_int[0] = VERSION_NUM;
     fd.rawWrite(write_data_int);
@@ -67,9 +67,9 @@ public class ReplayData {
 
   public void load(string fileName) {
     scope File fd;
-    int read_data_int[1];
-    long read_data_long[1];
-    float read_data_float[1];
+    int[1] read_data_int;
+    long[1] read_data_long;
+    float[1] read_data_float;
     fd.open(dir ~ "/" ~ fileName);
     fd.rawRead(read_data_int);
     if (read_data_int[0] != VERSION_NUM)

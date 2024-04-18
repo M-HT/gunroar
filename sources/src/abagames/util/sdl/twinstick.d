@@ -87,9 +87,9 @@ version (PANDORA) {
       } else {
         ry = -ry;
         float rd = atan2(cast(float) rx, cast(float) ry) * reverse + rotate;
-        assert(rd <>= 0);
+        assert(!std.math.isNaN(rd));
         float rl = sqrt(cast(float) rx * rx + cast(float) ry * ry);
-        assert(rl <>= 0);
+        assert(!std.math.isNaN(rl));
         const float rdSin = sin(rd);
         const float rdCos = cos(rd);
         state.right.x = adjustAxis(cast(int) (rdSin * rl));
@@ -201,7 +201,7 @@ public class TwinStickState {
   }
 
   public void read(File fd) {
-    float read_data[4];
+    float[4] read_data;
     fd.rawRead(read_data);
     left.x = read_data[0];
     left.y = read_data[1];
@@ -210,7 +210,7 @@ public class TwinStickState {
   }
 
   public void write(File fd) {
-    float write_data[4] = [left.x, left.y, right.x, right.y];
+    float[4] write_data = [left.x, left.y, right.x, right.y];
     fd.rawWrite(write_data);
   }
 

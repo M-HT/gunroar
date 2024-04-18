@@ -26,7 +26,7 @@ public class PrefManager: abagames.util.prefmanager.PrefManager {
   public void load() {
     scope File fd;
     try {
-      int read_data[1];
+      int[1] read_data;
       fd.open(PREF_FILE);
       fd.rawRead(read_data);
       if (read_data[0] == VERSION_NUM_13)
@@ -47,7 +47,7 @@ public class PrefManager: abagames.util.prefmanager.PrefManager {
     scope File fd;
     try {
       fd.open(PREF_FILE, "wb");
-      int write_data[1] = [VERSION_NUM];
+      int[1] write_data = [VERSION_NUM];
       fd.rawWrite(write_data);
       _prefData.save(fd);
     } finally {
@@ -74,24 +74,24 @@ public class PrefData {
 
   public void load(File fd) {
     fd.rawRead(_highScore);
-    int read_data[1];
+    int[1] read_data;
     fd.rawRead(read_data);
     _gameMode = read_data[0];
   }
 
   public void loadVer13(File fd) {
     init();
-    int read_data13[3];
+    int[3] read_data13;
     fd.rawRead(read_data13);
     _highScore[0..3] = read_data13[];
-    int read_data[1];
+    int[1] read_data;
     fd.rawRead(read_data);
     _gameMode = read_data[0];
   }
 
   public void save(File fd) {
     fd.rawWrite(_highScore);
-    int write_data[1] = [_gameMode];
+    int[1] write_data = [_gameMode];
     fd.rawWrite(write_data);
   }
 
